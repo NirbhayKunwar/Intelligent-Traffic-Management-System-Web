@@ -8,6 +8,7 @@
 
 # Backend secrets specifically
 itms-backend/data/.env
+itms-backend/data/db.json
 
 # Build outputs
 **/dist
