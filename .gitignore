@@ -20,3 +20,6 @@ itms-backend/data/db.json
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Local editor settings
+.vscode/settings.json
