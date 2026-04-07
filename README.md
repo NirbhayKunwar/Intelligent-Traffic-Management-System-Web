@@ -52,13 +52,13 @@ Traffic Data → Detection Module → Backend API → Frontend Dashboard
 
 ### 🚗 Congestion Dataset
 
-* 626 annotated images
+* 626 annotated images and more
 * YOLO format
 * Resolution: 640×640
 
 ### ⚠️ Accident Dataset
 
-* 1,258 annotated images
+* 1,258 annotated images and more
 * Train/Val/Test split
 * Resolution: 640×640
 
