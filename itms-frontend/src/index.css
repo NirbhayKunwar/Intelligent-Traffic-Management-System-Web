@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+/* Enable dark mode manually */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Global styles */
+html {
+  scroll-behavior: smooth;
+}
+/* Adjust scroll margin for sections to account for fixed header */
+section[id] {
+  scroll-margin-top: 96px;
+}
+/* Custom animations */
+@layer utilities {
+  .animate-in {
+    animation-fill-mode: both;
+  }
+/* Define animation names for sliding in from top and bottom */
+  .slide-in-from-top {
+    animation-name: slideInFromTop;
+  }
+/* Define animation name for sliding in from bottom */
+  .slide-in-from-bottom {
+    animation-name: slideInFromBottom;
+  }
+/* Define animation durations */
+  .duration-200 {
+    animation-duration: 200ms;
+  }
+/* Define animation duration of 300ms */
+  .duration-300 {
+    animation-duration: 300ms;
+  }
+/* Define animation duration of 500ms */
+  .duration-700 {
+    animation-duration: 700ms;
+  }
+/* Define animation delay of 100ms */
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+/* Define animation delay of 200ms */
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+/* Define animation delay of 300ms */
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+}
+/* Keyframes for sliding in from bottom */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+/* Final state of the animation */
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Keyframes for sliding in from top */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+/* Final state of the animation */
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

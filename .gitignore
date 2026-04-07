@@ -1,0 +1,21 @@
+# Node modules
+**/node_modules
+
+# Env files
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Backend secrets specifically
+itms-backend/data/.env
+
+# Build outputs
+**/dist
+**/build
+
+# Logs
+**/*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
