@@ -1,5 +1,5 @@
 import LegalTemplate from "./LegalTemplate";
-
+// This component renders the Security page using the LegalTemplate component, providing the title, last updated date, introduction, and sections of the security policy.
 export default function Security() {
   return (
     <LegalTemplate
@@ -36,6 +36,3 @@ export default function Security() {
     />
   );
 }
-
-
-

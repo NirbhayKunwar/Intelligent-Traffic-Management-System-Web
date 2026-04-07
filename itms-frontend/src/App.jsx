@@ -17,11 +17,7 @@ import Profile from "./Pages/Profile";
 import Dashboard from "./Pages/Dashboard";
 import CaseStudy from "./Pages/CaseStudy";
 
-// The ScrollToHash component is responsible for scrolling to the appropriate section of the page when a URL with a hash is accessed. 
-// It uses the useLocation hook from react-router-dom to access the current location and checks if there is a hash in the URL. 
-// If there is a hash, it extracts the ID from the hash and attempts to find the corresponding element on the page. 
-// If the element exists, it scrolls to that element smoothly using the scrollIntoView method. 
-// This component ensures that users are taken to the correct section of the page when they navigate to a URL with a hash, enhancing the user experience by providing smooth scrolling behavior.
+// The App component is the main entry point of the application, responsible for rendering the overall layout and managing the scroll state for the Navbar. It uses React Router for client-side routing, allowing users to navigate between different pages of the application without a full page reload. The AppShell component is used to render the main layout of the application, including the Navbar and the different pages based on the current route. The ScrollToHash component is responsible for scrolling to the appropriate section of the page when navigating to a route with a hash, ensuring a smooth user experience when accessing specific sections of the content. The scroll listener in the App component updates the scrolled state based on the user's scroll position, which can be used to apply different styles to the Navbar when scrolled.
 function ScrollToHash() {
   const location = useLocation();
 
@@ -49,21 +45,14 @@ function ScrollToHash() {
 
   return null;
 }
-// The AppShell component is responsible for rendering the main layout of the application, including the Navbar and the different pages based on the current route. 
-// It uses the useLocation hook from react-router-dom to determine the current path and conditionally hide the Navbar on the login and signup pages. 
-// The Routes component defines the different routes for the application, rendering the appropriate components based on the URL path. 
-// This structure allows for a clean separation of concerns, with AppShell handling the layout and routing, while App manages the scroll state and overall application structure. 
-// By placing the Router in the App component, we ensure that the routing and scroll behavior work seamlessly across all pages of the application. 
-// The scroll listener is added in the App component to ensure that it is active on all pages, including the login and signup pages. 
-// This allows the Navbar to change its appearance based on the scroll position, even on pages where the Navbar is hidden. 
-// The scroll listener updates the scrolled state whenever the user scrolls more than 50 pixels down the page, which can be used to apply different styles to the Navbar when scrolled.
+// The AppShell component is responsible for rendering the main layout of the application, including the Navbar and the different pages based on the current route. It uses the useLocation hook to access the current location object, which contains information about the current URL. The hideNavbar and hideFooter variables are set to true if the current pathname is either "/login" or "/signup", which is used to conditionally render the Navbar and Footer components, hiding them on the login and signup pages for a cleaner user interface. The Routes component defines the different routes of the application, rendering the appropriate components based on the current path. The login and signup routes are defined to ensure that the Navbar is hidden on these pages, while still allowing the scroll listener to function properly, providing a consistent user experience across all pages of the application.
 function AppShell({ scrolled }) {
   // The useLocation hook is used to access the current location object, which contains information about the current URL.
   const location = useLocation();
   // The hideNavbar and hideFooter variables are set to true if the current pathname is either "/login" or "/signup". This is used to conditionally render the Navbar and Footer components, hiding them on the login and signup pages for a cleaner user interface.
   const hideNavbar = location.pathname === "/login" || location.pathname === "/signup";
   const hideFooter = location.pathname === "/login" || location.pathname === "/signup";
-
+// The Routes component defines the different routes of the application, rendering the appropriate components based on the current path. The login and signup routes are defined to ensure that the Navbar is hidden on these pages, while still allowing the scroll listener to function properly, providing a consistent user experience across all pages of the application.
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 text-slate-900 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100 transition duration-300">
       {!hideNavbar && <Navbar scrolled={scrolled} />}

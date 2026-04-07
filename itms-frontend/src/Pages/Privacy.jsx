@@ -1,5 +1,5 @@
 import LegalTemplate from "./LegalTemplate";
-
+// This component renders the Privacy Policy page using the LegalTemplate component, providing the title, last updated date, introduction, and sections of the privacy policy.
 export default function Privacy() {
   return (
     <LegalTemplate
@@ -43,6 +43,3 @@ export default function Privacy() {
     />
   );
 }
-
-
-

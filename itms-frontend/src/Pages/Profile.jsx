@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../lib/api";
 
+// This component renders the user profile page, allowing users to view and update their profile information, including their full name, email, password, and profile picture. The component handles loading the user's profile data, updating the profile information, uploading a new profile picture to Cloudinary, and deleting the account. It also includes error handling and displays appropriate messages for different states (loading, error, unauthenticated). The UI is styled with a gradient background, borders, shadows, and responsive design to provide a visually appealing and functional interface for managing user profiles.
 export default function Profile() {
-  // State for user data, loading status, and error messages
+  // State variables for user profile data, loading status, form data, and file upload handling
   const [user, setUser] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | ready | error | unauth
   const [error, setError] = useState("");
@@ -17,33 +18,33 @@ export default function Profile() {
   const [isSaved, setIsSaved] = useState(false);
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
-
+// Ref for the hidden file input element used for uploading profile pictures
   const fileInputRef = useRef(null);
 
-
+// State variables for handling profile picture upload, including the selected file, preview URL, and uploaded image URL
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
-
+// Cloudinary configuration for uploading profile pictures
   const cloudName = "dhnpok3mf";
   const uploadPreset = "profile_upload";
-
+// Compute the profile image URL, prioritizing the uploaded image, then the user's existing profile picture, and finally the preview URL for the selected file
   const profileImage = imageUrl || user?.profilePic || preview || "";
   const isGoogleAuth = user?.authProvider === "google";
   const needsOldPassword = !(isGoogleAuth && user?.passwordSet === false);
-
+// Function to handle profile picture upload to Cloudinary and update the user's profile with the new image URL
   const handleUpload = async (selectedFileParam) => {
     const uploadFile = selectedFileParam || file;
-
+// Validate that a file has been selected for upload
     if (!uploadFile) {
       alert("No file selected");
       return;
     }
-
+// Validate that the selected file is an image
     const formData = new FormData();
     formData.append("file", uploadFile);
     formData.append("upload_preset", uploadPreset);
-
+// Attempt to upload the image to Cloudinary and update the user's profile with the new image URL
     try {
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -52,13 +53,13 @@ export default function Profile() {
           body: formData,
         }
       );
-
+// Validate the response from Cloudinary and extract the secure URL of the uploaded image
       const data = await res.json();
-
+// Check if the upload was successful and a secure URL is returned
       if (!data?.secure_url) {
         throw new Error("Upload failed.");
       }
-
+// Update the profile image URL state and the user's profile with the new image URL, and dispatch a custom event to notify other components of the profile picture update
       setImageUrl(data.secure_url);
       setUser((prev) => ({
         ...prev,
@@ -69,7 +70,7 @@ export default function Profile() {
           new CustomEvent("profile-pic-updated", { detail: data.secure_url })
         );
       }
-
+// Make an API request to update the user's profile picture URL in the backend
       await apiRequest("/api/user/update-profile-pic", {
         method: "POST",
         headers: {
@@ -82,23 +83,23 @@ export default function Profile() {
       alert("Upload failed. Please try again.");
     }
   };
-
+// Function to handle changes in the file input, validating the selected file and initiating the upload process
   const handleFileChange = (e) => {
     const selectedFile = e.target.files?.[0];
-
+// Validate that a file has been selected for upload
     if (!selectedFile) return;
-
+// Validate that the selected file is an image
     if (!selectedFile.type.startsWith("image/")) {
       alert("Only images allowed");
       return;
     }
-
+// Update the file and preview state with the selected file and its preview URL, and initiate the upload process
     setFile(selectedFile);
     setPreview(URL.createObjectURL(selectedFile));
-
+// Initiate the upload process for the selected file
     handleUpload(selectedFile);
   };
-
+// Clean up the preview URL when the component unmounts or when a new file is selected to prevent memory leaks
   useEffect(() => {
     return () => {
       if (preview) URL.revokeObjectURL(preview);
@@ -147,7 +148,7 @@ export default function Profile() {
       mounted = false;
     };
   }, []);
-
+// Update form data when user profile changes
   useEffect(() => {
     if (!user) return;
     setFormData((prev) => ({
@@ -170,21 +171,21 @@ export default function Profile() {
       setStatus("error");
     }
   };
-
+// Handle saving changes to the user's profile, including validation of form data and making an API request to update the profile information in the backend
   const handleSaveChanges = async () => {
     setFormError("");
     setFormSuccess("");
-
+// Validate that the full name and email fields are not empty
     if (!formData.fullName?.trim() || !formData.email?.trim()) {
       setFormError("Full name and email are required.");
       return;
     }
-
+// Validate that the old password is provided if a new password is being set and the user is not authenticated via Google without a password
     if (formData.newPassword && needsOldPassword && !formData.oldPassword) {
       setFormError("Please enter your old password to set a new one.");
       return;
     }
-
+// Validate that the new password is at least 6 characters long if it is being set
     setSaveStatus("saving");
     try {
       const payload = {
@@ -197,12 +198,12 @@ export default function Profile() {
         }
         payload.newPassword = formData.newPassword;
       }
-
+// Make an API request to update the user's profile information in the backend
       const data = await apiRequest("/api/user", {
         method: "PUT",
         body: payload,
       });
-
+// Update the user state with the new profile information, reset the form data for passwords, and display a success message
       setUser(data.user);
       setFormData((prev) => ({
         ...prev,
@@ -217,7 +218,7 @@ export default function Profile() {
       setSaveStatus("idle");
     }
   };
-
+// Handle account deletion, including confirmation from the user and making an API request to delete the account in the backend
   const handleDeleteAccount = async () => {
     if (typeof window !== "undefined") {
       const confirmed = window.confirm(
@@ -225,7 +226,7 @@ export default function Profile() {
       );
       if (!confirmed) return;
     }
-
+// Make an API request to delete the user's account in the backend, and handle the response by clearing the user state and reloading the page
     try {
       await apiRequest("/api/user", { method: "DELETE" });
       setUser(null);
@@ -238,7 +239,7 @@ export default function Profile() {
       setStatus("error");
     }
   };
-
+// Render the profile page with different states for loading, unauthenticated, error, and ready. The page includes a header with the user's profile picture or initials, name, email, and account status badges. The main content area allows the user to update their profile information, upload a new profile picture, and delete their account, with appropriate styling and responsive design for a visually appealing interface.
   return (
     <div className="min-h-screen px-4 sm:px-6 lg:px-8 pt-24 pb-16 sm:pt-28 md:pt-32 bg-gradient-to-br from-slate-50 via-cyan-50 to-indigo-100 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
       <div className="max-w-5xl mx-auto space-y-10">
@@ -284,7 +285,7 @@ export default function Profile() {
             </span>
           </div>
         </div>
-
+{/* Main content area with gradient background, borders, shadows, and sections for managing user profile information. The content area includes a header for account settings, a status indicator for unsaved changes, and conditional rendering for different states (loading, unauthenticated, error, ready). When the profile is ready, it displays a form for updating the user's full name, email, password, and profile picture, along with buttons to save changes and delete the account. The section is styled for readability and dark mode support. */}
         <div className="relative overflow-hidden rounded-2xl p-6 sm:p-8 bg-gradient-to-br from-white/70 via-slate-50/40 to-indigo-50/60 dark:from-slate-900/70 dark:via-slate-900/40 dark:to-slate-950/70 border border-white/50 dark:border-cyan-500/30 shadow-2xl shadow-cyan-500/10 dark:shadow-cyan-500/20 backdrop-blur-xl">
           <div className="pointer-events-none absolute -top-10 left-1/4 h-16 w-40 -rotate-12 bg-white/70 blur-2xl opacity-80 dark:bg-white/10"></div>
           <div className="pointer-events-none absolute top-8 right-6 h-1 w-24 bg-white/60 blur-sm opacity-70 dark:bg-white/20"></div>
@@ -309,11 +310,11 @@ export default function Profile() {
                 {isSaved ? "Saved Changes" : "Unsaved Changes"}
               </span>
             </div>
-
+{/* Conditional rendering for different states of the profile page, including loading, unauthenticated, error, and ready states. Each state displays appropriate messages and actions for the user, such as a loading indicator, a prompt to log in, an error message with a retry button, or the profile management form when the profile is ready. The section is styled for readability and dark mode support. */}
             {status === "loading" && (
               <p className="text-slate-900 dark:text-gray-300">Loading profile...</p>
             )}
-
+{/* Conditional rendering for unauthenticated state, displaying a message prompting the user to log in and a button to navigate to the login page. The section is styled for readability and dark mode support. */}
             {status === "unauth" && (
               <div className="space-y-4">
                 <p className="text-slate-900 dark:text-gray-300">
@@ -327,7 +328,7 @@ export default function Profile() {
                 </Link>
               </div>
             )}
-
+{/* Conditional rendering for error state, displaying the error message and a button to retry loading the profile. The section is styled for readability and dark mode support, with the error message highlighted in red. */}
             {status === "error" && (
               <div className="space-y-4">
                 <p className="text-red-700 dark:text-red-200">{error}</p>
@@ -340,7 +341,7 @@ export default function Profile() {
                 </button>
               </div>
             )}
-
+{/* Conditional rendering for ready state, displaying the profile management form with fields for full name, email, old password, new password, and profile picture upload. The section includes buttons to save changes and delete the account, with appropriate validation and error handling for form submission. The UI is styled for readability and dark mode support, with a visually appealing layout and responsive design. */}
             {status === "ready" && user && (
               <div className="grid gap-5">
                 <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/50 p-5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
@@ -471,7 +472,7 @@ export default function Profile() {
                     Leave blank to keep your current password.
                   </p>
                 </label>
-
+{/* Display form error or success messages, styled appropriately for visibility and dark mode support. The error message is highlighted in red, while the success message is highlighted in green. Both messages are displayed below the form fields and above the action buttons for better user feedback on form submission. */}
                 {formError && (
                   <p className="text-sm text-rose-600 dark:text-rose-300">{formError}</p>
                 )}
@@ -480,7 +481,7 @@ export default function Profile() {
                     {formSuccess}
                   </p>
                 )}
-
+{/* Action buttons for saving changes, deleting the account, and signing out. The save button is disabled while the save operation is in progress, and the delete button prompts the user for confirmation before proceeding. The buttons are styled with gradients, borders, and hover effects for better visibility and user experience, with support for dark mode. */}
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
@@ -509,7 +510,7 @@ export default function Profile() {
             )}
           </div>
         </div>
-
+{/* Additional section with security tips and navigation links, styled with a gradient background, borders, shadows, and responsive design for better visibility and user experience. The section includes a header for security tips, a brief message about using strong passwords and enabling multi-factor authentication, and a link to navigate back to the dashboard. The styling supports both light and dark modes for better accessibility. */}
         <div className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-white/70 via-slate-50/40 to-indigo-50/60 dark:from-slate-900/70 dark:via-slate-900/40 dark:to-slate-950/70 border border-white/50 dark:border-cyan-500/30 shadow-xl shadow-cyan-500/10 dark:shadow-cyan-500/20 backdrop-blur-xl">
           <div className="relative z-10 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -526,7 +527,7 @@ export default function Profile() {
             </Link>
           </div>
         </div>
-
+{/* Footer section with navigation links, styled with a gradient background, borders, shadows, and responsive design for better visibility and user experience. The section includes links to navigate back to the home page and the dashboard, with appropriate styling for light and dark modes. The links are displayed in a flex container that wraps on smaller screens for better responsiveness. */}
         <div className="flex flex-wrap justify-center gap-3 text-sm">
           <Link
             to="/"

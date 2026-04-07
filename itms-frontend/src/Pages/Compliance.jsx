@@ -1,5 +1,5 @@
 import LegalTemplate from "./LegalTemplate";
-
+// This component renders the case study page using the LegalTemplate component, providing the title, last updated date, introduction, and sections of the case study.
 export default function Compliance() {
   return (
     <LegalTemplate
@@ -36,6 +36,3 @@ export default function Compliance() {
     />
   );
 }
-
-
-

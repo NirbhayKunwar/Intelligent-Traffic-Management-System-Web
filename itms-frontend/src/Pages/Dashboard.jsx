@@ -2,12 +2,12 @@
 import { Link } from "react-router-dom";
 import { apiRequest } from "../lib/api";
 import UserDashboard from "./UserDashboard";
-
+// This component renders the dashboard page, which displays different content based on the user's authentication status and role. It uses the useEffect hook to load the user's session data when the component mounts, and manages loading, error, and unauthenticated states. Depending on the user's role, it either renders a user-specific dashboard or an operator dashboard with various sections for live camera feed, video upload, model analysis, traffic flow graph, and traffic chart. The component also includes styling for a gradient background, borders, shadows, and responsive design.
 export default function Dashboard() {
   const [status, setStatus] = useState("loading"); // loading | ready | error | unauth
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
-
+// useEffect hook to load the user's session data when the component mounts. It makes an API request to check the user's authentication status and retrieves their information. The component manages different states for loading, error, and unauthenticated scenarios, and updates the UI accordingly.
   useEffect(() => {
     let mounted = true;
     async function loadSession() {
@@ -26,16 +26,16 @@ export default function Dashboard() {
         }
       }
     }
-
+// Call the loadSession function to check the user's authentication status and load their information when the component mounts. The function handles different scenarios for unauthenticated users and errors, updating the component's state accordingly.
     loadSession();
     return () => {
       mounted = false;
     };
   }, []);
-
+// Define a set of common classes for the dashboard cards, including styling for gradient backgrounds, borders, shadows, and responsive design. This variable is used to maintain consistent styling across different sections of the dashboard.
   const cardClasses =
     "relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-white/70 via-slate-50/40 to-indigo-50/60 dark:from-slate-900/70 dark:via-slate-900/40 dark:to-slate-950/70 border border-white/50 dark:border-cyan-500/30 shadow-2xl shadow-cyan-500/10 dark:shadow-cyan-500/20 backdrop-blur-xl";
-
+// Conditional rendering based on the status of the dashboard. If the status is "loading", it displays a loading message. If the status is "unauth", it prompts the user to log in to access the dashboard. If there is an error, it shows the error message and provides a retry button. If the user is authenticated, it checks their role and renders either a user-specific dashboard or an operator dashboard with various sections for live camera feed, video upload, model analysis, traffic flow graph, and traffic chart.
   if (status === "loading") {
     return (
       <div className="min-h-screen px-4 sm:px-6 lg:px-8 pt-24 pb-16 sm:pt-28 md:pt-32 bg-gradient-to-br from-slate-50 via-cyan-50 to-indigo-100 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
@@ -45,7 +45,7 @@ export default function Dashboard() {
       </div>
     );
   }
-
+// If the user is not authenticated, display a message prompting them to log in, along with a link to the login page. The content is styled with a gradient background, borders, shadows, and responsive design to maintain a consistent look and feel with the rest of the application.
   if (status === "unauth") {
     return (
       <div className="min-h-screen px-4 sm:px-6 lg:px-8 pt-24 pb-16 sm:pt-28 md:pt-32 bg-gradient-to-br from-slate-50 via-cyan-50 to-indigo-100 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
@@ -72,7 +72,7 @@ export default function Dashboard() {
       </div>
     );
   }
-
+// If there is an error loading the dashboard, display the error message and provide a retry button. The content is styled with a gradient background, borders, shadows, and responsive design to maintain a consistent look and feel with the rest of the application.
   if (status === "error") {
     return (
       <div className="min-h-screen px-4 sm:px-6 lg:px-8 pt-24 pb-16 sm:pt-28 md:pt-32 bg-gradient-to-br from-slate-50 via-cyan-50 to-indigo-100 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
@@ -96,12 +96,12 @@ export default function Dashboard() {
       </div>
     );
   }
-
+// If the user is authenticated, check their role and render the appropriate dashboard. If the user's role is "user", render the UserDashboard component with the user's information. Otherwise, render the operator dashboard with various sections for live camera feed, video upload, model analysis, traffic flow graph, and traffic chart. The operator dashboard is styled with a gradient background, borders, shadows, and responsive design to provide a visually appealing and functional interface for monitoring traffic operations.
   const role = user?.role || "operator";
   if (role === "user") {
     return <UserDashboard user={user} />;
   }
-
+// Render the operator dashboard with various sections for live camera feed, video upload, model analysis, traffic flow graph, and traffic chart. Each section is styled with a gradient background, borders, shadows, and responsive design to provide a visually appealing and functional interface for monitoring traffic operations.
   return (
     <div className="min-h-screen px-4 sm:px-6 lg:px-8 pt-24 pb-16 sm:pt-28 md:pt-32 bg-gradient-to-br from-slate-50 via-cyan-50 to-indigo-100 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -124,7 +124,7 @@ export default function Dashboard() {
             Back to Home
           </Link>
         </header>
-
+{/* Grid layout for the dashboard sections, including live camera feed, video upload, model analysis, traffic flow graph, and traffic chart. Each section is styled with a gradient background, borders, shadows, and responsive design to provide a visually appealing and functional interface for monitoring traffic operations. The sections include interactive elements such as file uploads and buttons to run models, along with placeholders for live data and visualizations. */}
         <div className="grid gap-6">
           <section className={cardClasses}>
             <div className="pointer-events-none absolute -top-6 right-10 h-24 w-24 rounded-full bg-cyan-200/60 blur-3xl dark:bg-cyan-500/20"></div>
@@ -142,7 +142,7 @@ export default function Dashboard() {
               </div>
             </div>
           </section>
-
+{/* Section for video upload and model analysis, including a file input for uploading traffic incident videos and buttons to run accident and congestion detection models. The section is styled with a gradient background, borders, shadows, and responsive design to provide a visually appealing and functional interface for monitoring traffic operations. The model analysis section includes placeholders for displaying the results of the accident and congestion detection models. */}
           <section className={cardClasses}>
             <div className="pointer-events-none absolute -top-8 left-6 h-20 w-32 -rotate-6 bg-white/70 blur-2xl opacity-80 dark:bg-white/10"></div>
             <div className="relative z-10 space-y-4">
@@ -172,7 +172,7 @@ export default function Dashboard() {
               </button>
             </div>
           </section>
-
+{/* Section for model analysis, including placeholders for displaying the results of the accident and congestion detection models. The section is styled with a gradient background, borders, shadows, and responsive design to provide a visually appealing and functional interface for monitoring traffic operations. The model analysis section includes buttons to run the accident and congestion detection models, along with notes about processing time. */}
           <section className={cardClasses}>
             <div className="pointer-events-none absolute -top-8 left-6 h-20 w-32 -rotate-6 bg-white/70 blur-2xl opacity-80 dark:bg-white/10"></div>
             <div className="relative z-10 space-y-6">
@@ -204,7 +204,7 @@ export default function Dashboard() {
                     Process takes time.
                   </p>
                 </div>
-
+{/* Model analysis section for congestion detection, including a placeholder for displaying the results of the congestion detection model. The section is styled with a gradient background, borders, shadows, and responsive design to provide a visually appealing and functional interface for monitoring traffic operations. The congestion detection model includes a button to run the model and a note about processing time. */}
                 <div className="rounded-2xl border border-white/60 dark:border-cyan-500/20 bg-white/60 dark:bg-black/30 p-5 space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -228,7 +228,7 @@ export default function Dashboard() {
               </div>
             </div>
           </section>
-
+{/* Section for traffic flow graph, including a placeholder SVG for visualizing hourly vehicle throughput across priority corridors. The section is styled with a gradient background, borders, shadows, and responsive design to provide a visually appealing and functional interface for monitoring traffic operations. The traffic flow graph includes a heading and description, along with a stylized line graph to represent traffic flow data. */}
           <section className={cardClasses}>
             <div className="relative z-10 space-y-4">
               <div>
@@ -263,7 +263,7 @@ export default function Dashboard() {
               </div>
             </div>
           </section>
-
+{/* Section for traffic flow graph, including a placeholder SVG for visualizing hourly vehicle throughput across priority corridors. The section is styled with a gradient background, borders, shadows, and responsive design to provide a visually appealing and functional interface for monitoring traffic operations. The traffic flow graph includes a heading and description, along with a stylized line graph to represent traffic flow data. */}
           <section className={cardClasses}>
             <div className="relative z-10 space-y-4">
               <div>

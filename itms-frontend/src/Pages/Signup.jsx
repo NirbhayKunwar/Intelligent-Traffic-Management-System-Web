@@ -6,10 +6,12 @@ import { apiRequest } from "../lib/api";
 import cityImage from "../assets/City.jpg";
 import cityNightImage from "../assets/Citynight.jpg";
 
+// Base URL for Google authentication, derived from environment variable or defaulting to localhost
 const GOOGLE_AUTH_BASE = (
   import.meta.env.VITE_API_BASE_URL || "http://localhost:4000"
 ).replace(/\/$/, "");
 
+// Helper function to build Google authentication URL with query parameters
 function buildGoogleAuthUrl(params) {
   const url = new URL(`${GOOGLE_AUTH_BASE}/auth/google`);
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -20,6 +22,7 @@ function buildGoogleAuthUrl(params) {
   return url.toString();
 }
 
+// Main SignUp component
 export default function SignUp() {
   const [searchParams] = useSearchParams();
   const oauthStatus = searchParams.get("oauth");
@@ -72,6 +75,7 @@ export default function SignUp() {
 
     setError("");
     setLoading(true);
+
     // Simulate API call
     try {
       await apiRequest("/api/auth/signup", {
@@ -92,6 +96,7 @@ export default function SignUp() {
     }
   };
 
+// Render the sign-up form with a split-screen design and conditional rendering based on form state
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-gradient-to-br from-slate-50 via-cyan-50 to-indigo-100 text-slate-900 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100">
       <section className="relative hidden lg:flex flex-col justify-between px-12 py-16 text-white">
@@ -131,7 +136,7 @@ export default function SignUp() {
           Secure access for city operators and transport teams.
         </div>
       </section>
-
+{/* Sign-up form section with background image and gradient overlay, including form fields and Google OAuth option */}
       <section className="relative flex items-center justify-center px-6 py-16">
         <div className="absolute inset-0">
           <div
@@ -140,7 +145,7 @@ export default function SignUp() {
           ></div>
           <div className="absolute inset-0 bg-gradient-to-br from-gray-400/30 via-white/30 to-indigo-50/30 dark:from-slate-950/85 dark:via-slate-950/80 dark:to-slate-900/85"></div>
         </div>
-
+{/* Form container with conditional rendering for account type, error messages, and loading state */}
         <div className="relative w-full max-w-md space-y-6">
           <div className="text-center space-y-2">
             <Link to="/">
@@ -153,10 +158,10 @@ export default function SignUp() {
             <p className="text-slate-800 dark:text-gray-300 text-lg">Create your account</p>
             <p className="text-slate-800 dark:text-gray-400 text-sm">Start managing traffic smarter today</p>
           </div>
-
+{/* Form container with conditional rendering for account type, error messages, and loading state */}
           <div className="bg-gradient-to-br from-white/75 via-slate-50/50 to-indigo-50/70 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 rounded-2xl p-8 border border-white/60 dark:border-cyan-500/30 shadow-2xl shadow-cyan-500/10 dark:shadow-cyan-500/20 relative overflow-hidden text-slate-900 dark:text-slate-100 backdrop-blur-xl">
             <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 pointer-events-none"></div>
-
+{/* Sign-up form with fields for account type, full name, organization (for operators), email, password, and confirm password, along with error handling and loading state */}
             <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
               {oauthMessage && (
                 <div className="rounded-md border border-cyan-200/70 bg-cyan-50/70 px-3 py-2 text-sm text-cyan-700 dark:border-cyan-500/30 dark:bg-cyan-950/40 dark:text-cyan-200">
@@ -218,7 +223,7 @@ export default function SignUp() {
                   />
                 </div>
               </div>
-
+{/* Conditionally render organization field if the selected role is operator */}
               {formData.role === "operator" && (
                 <div className="space-y-2">
                   <label htmlFor="organization" className="text-cyan-700 dark:text-cyan-300 text-sm font-medium">
@@ -238,7 +243,7 @@ export default function SignUp() {
                   </div>
                 </div>
               )}
-
+{/* Email, password, and confirm password fields with icons, placeholders, and validation */}
               <div className="space-y-2">
                 <label htmlFor="email" className="text-cyan-700 dark:text-cyan-300 text-sm font-medium">
                   Email Address
@@ -256,7 +261,7 @@ export default function SignUp() {
                   />
                 </div>
               </div>
-
+{/* Password and confirm password fields with icons, placeholders, and validation */}
               <div className="space-y-2">
                 <label htmlFor="password" className="text-cyan-700 dark:text-cyan-300 text-sm font-medium">
                   Password
@@ -274,7 +279,7 @@ export default function SignUp() {
                   />
                 </div>
               </div>
-
+{/* Confirm password field with validation to ensure it matches the password field */}
               <div className="space-y-2">
                 <label htmlFor="confirmPassword" className="text-cyan-700 dark:text-cyan-300 text-sm font-medium">
                   Confirm Password
@@ -292,7 +297,7 @@ export default function SignUp() {
                   />
                 </div>
               </div>
-
+{/* Terms of Service and Privacy Policy agreement text with links to respective pages */}
               <p className="text-xs text-slate-800 dark:text-gray-400">
                 By signing up, you agree to our{" "}
                 <Link to="/terms" className="text-cyan-700 hover:text-cyan-600 dark:text-cyan-400 dark:hover:text-cyan-300">
@@ -303,7 +308,7 @@ export default function SignUp() {
                   Privacy Policy
                 </Link>
               </p>
-
+{/* Submit button with loading state and disabled state when form is being submitted */}
               <div>
                 <button
                   type="submit"
@@ -315,7 +320,7 @@ export default function SignUp() {
                 </button>
               </div>
             </form>
-
+{/* Divider with "Or continue with" text for alternative sign-up options */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-white/60 dark:border-gray-700"></div>
@@ -324,7 +329,7 @@ export default function SignUp() {
                 <span className="px-2 bg-white/80 dark:bg-gray-900 text-slate-800 dark:text-gray-400">Or continue with</span>
               </div>
             </div>
-
+{/* Google OAuth sign-up button with conditional logic to ensure organization is provided for operators, and opens the Google authentication URL in the same tab */}
           <div>
             <button
               type="button"
@@ -348,7 +353,7 @@ export default function SignUp() {
             </button>
           </div>
           </div>
-
+{/* Link to sign in page for users who already have an account, with styling for hover and dark mode */}
           <p className="text-center text-taupe-950 dark:text-gray-400">
             Already have an account?{" "}
             <Link to="/login" className="text-taupe hover:text-cyan-600 dark:text-cyan-400 dark:hover:text-cyan-300 transition-colors font-medium">

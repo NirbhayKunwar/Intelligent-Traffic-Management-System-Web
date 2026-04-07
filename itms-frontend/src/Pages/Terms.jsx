@@ -1,5 +1,5 @@
 import LegalTemplate from "./LegalTemplate";
-
+// This component renders the Terms of Service page using the LegalTemplate component, providing the title, last updated date, introduction, and sections of the terms of service.
 export default function Terms() {
   return (
     <LegalTemplate
@@ -44,6 +44,3 @@ export default function Terms() {
     />
   );
 }
-
-
-
