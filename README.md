@@ -126,7 +126,7 @@ GOOGLE_CLIENT_ID=your_google_client_id
 Run backend:
 
 ```bash
-npm run dev
+node server.js
 ```
 
 ---
