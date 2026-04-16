@@ -18,7 +18,6 @@ CONGESTION_MODEL_PATH = os.getenv(
     os.path.abspath(os.path.join(BASE_DIR, "..", "datasets", "Congestion model", "traffic-model.pt"))
 )
 
-
 app = FastAPI(title="ITMS Model Service", version="1.0.0")
 
 _accident_model = None
