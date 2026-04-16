@@ -282,3 +282,9 @@ def infer_congestion(req: InferRequest):
         print(f"❌ CONGESTION ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+if __name__ == "__main__":
+    import uvicorn
+
+    host = os.getenv("MODEL_SERVICE_HOST", "127.0.0.1")
+    port = int(os.getenv("MODEL_SERVICE_PORT", "8001"))
+    uvicorn.run("app:app", host=host, port=port, reload=False)
