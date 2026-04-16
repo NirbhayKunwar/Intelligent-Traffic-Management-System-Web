@@ -18,6 +18,7 @@ export default function Profile() {
   const [isSaved, setIsSaved] = useState(false);
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+  const [disconnectStatus, setDisconnectStatus] = useState("idle"); // idle | disconnecting
 // Ref for the hidden file input element used for uploading profile pictures
   const fileInputRef = useRef(null);
 
@@ -25,62 +26,75 @@ export default function Profile() {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
-// Cloudinary configuration for uploading profile pictures
-  const cloudName = "dhnpok3mf";
-  const uploadPreset = "profile_upload";
-// Compute the profile image URL, prioritizing the uploaded image, then the user's existing profile picture, and finally the preview URL for the selected file
+
+  // Compute the profile image URL, prioritizing the uploaded image, then the user's existing profile picture, and finally the preview URL for the selected file
   const profileImage = imageUrl || user?.profilePic || preview || "";
   const isGoogleAuth = user?.authProvider === "google";
   const needsOldPassword = !(isGoogleAuth && user?.passwordSet === false);
-// Function to handle profile picture upload to Cloudinary and update the user's profile with the new image URL
+// Function to handle profile picture upload via the secure backend (prevents exposing Cloudinary keys)
   const handleUpload = async (selectedFileParam) => {
     const uploadFile = selectedFileParam || file;
-// Validate that a file has been selected for upload
     if (!uploadFile) {
       alert("No file selected");
       return;
     }
-// Validate that the selected file is an image
-    const formData = new FormData();
-    formData.append("file", uploadFile);
-    formData.append("upload_preset", uploadPreset);
-// Attempt to upload the image to Cloudinary and update the user's profile with the new image URL
+
+    const bodyData = new FormData();
+    bodyData.append("image", uploadFile);
+
     try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-// Validate the response from Cloudinary and extract the secure URL of the uploaded image
-      const data = await res.json();
-// Check if the upload was successful and a secure URL is returned
-      if (!data?.secure_url) {
-        throw new Error("Upload failed.");
-      }
-// Update the profile image URL state and the user's profile with the new image URL, and dispatch a custom event to notify other components of the profile picture update
-      setImageUrl(data.secure_url);
+      setSaveStatus("saving");
+      // Upload directly to our backend, which then securely handles the Cloudinary upload
+      const data = await apiRequest("/api/user/update-profile-pic", {
+        method: "POST",
+        body: bodyData,
+      });
+
+      const newImageUrl = data.user?.profilePic;
+      setImageUrl(newImageUrl);
       setUser((prev) => ({
         ...prev,
-        profilePic: data.secure_url,
+        ...data.user,
       }));
-      if (typeof window !== "undefined") {
+
+      if (typeof window !== "undefined" && newImageUrl) {
         window.dispatchEvent(
-          new CustomEvent("profile-pic-updated", { detail: data.secure_url })
+          new CustomEvent("profile-pic-updated", { detail: newImageUrl })
         );
       }
-// Make an API request to update the user's profile picture URL in the backend
-      await apiRequest("/api/user/update-profile-pic", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ imageUrl: data.secure_url }),
-      });
+      setFormSuccess("Profile picture updated!");
     } catch (err) {
       console.error("Upload failed:", err);
-      alert("Upload failed. Please try again.");
+      setError("Upload failed. Please try again.");
+    } finally {
+      setSaveStatus("idle");
+    }
+  };
+
+  // Function to handle removing the profile photo
+  const handleRemovePhoto = async () => {
+    try {
+      setSaveStatus("saving");
+      // Use the profile edit endpoint to clear the picture
+      const data = await apiRequest("/api/user/update-profile-pic", {
+        method: "POST",
+        body: JSON.stringify({ imageUrl: "" }),
+      });
+
+      setUser(data.user);
+      setImageUrl("");
+      setPreview(null);
+      setFile(null);
+      
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("profile-pic-updated", { detail: "" }));
+      }
+      setFormSuccess("Profile photo removed.");
+    } catch (err) {
+      console.error("Remove failed:", err);
+      setFormError("Failed to remove photo.");
+    } finally {
+      setSaveStatus("idle");
     }
   };
 // Function to handle changes in the file input, validating the selected file and initiating the upload process
@@ -122,6 +136,16 @@ export default function Profile() {
     // Function to fetch user profile data
     async function loadProfile() {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("oauth") === "linked") {
+           setFormSuccess("Google account connected successfully!");
+           window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        if (urlParams.get("oauth_error")) {
+           setFormError(decodeURIComponent(urlParams.get("oauth_error")));
+           window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
         const data = await apiRequest("/api/auth/me");
         if (!mounted) return;
         setUser(data.user);
@@ -169,6 +193,28 @@ export default function Profile() {
     } catch (err) {
       setError(err.message || "Logout failed.");
       setStatus("error");
+    }
+  };
+
+  const handleDisconnectGoogle = async () => {
+    if (disconnectStatus === "disconnecting") return;
+    const hasAlternative = (user?.linkedProviders || []).length > 1 || user?.passwordSet;
+    if (!hasAlternative) {
+      alert("You cannot disconnect Google without setting a password first.");
+      return;
+    }
+
+    setDisconnectStatus("disconnecting");
+    setFormError("");
+    setFormSuccess("");
+    try {
+      const data = await apiRequest("/api/auth/google/disconnect", { method: "POST" });
+      setUser(data.user);
+      setFormSuccess("Google account disconnected successfully.");
+    } catch (err) {
+      setFormError(err.message || "Failed to disconnect Google account.");
+    } finally {
+      setDisconnectStatus("idle");
     }
   };
 // Handle saving changes to the user's profile, including validation of form data and making an API request to update the profile information in the backend
@@ -271,17 +317,25 @@ export default function Profile() {
                   : "Signed up with Email"}
               </span>
             )}
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-              <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-              Active Operator
+            <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${
+              user?.role === "operator" 
+                ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
+                : "border-slate-200 bg-white/80 text-slate-800 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-100"
+            }`}>
+              <span className={`h-2 w-2 rounded-full ${user?.role === "operator" ? "bg-emerald-500" : "bg-cyan-500"}`}></span>
+              {user?.role === "operator" ? "Active Operator" : "Normal User"}
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm text-cyan-800 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200">
-              <span className="h-2 w-2 rounded-full bg-cyan-500"></span>
-              Verified Account
+            <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${
+              user?.linkedProviders?.includes("google")
+                ? "border-cyan-200 bg-cyan-50 text-cyan-800 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-200"
+                : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+            }`}>
+              <span className={`h-2 w-2 rounded-full ${user?.linkedProviders?.includes("google") ? "bg-cyan-500" : "bg-amber-500"}`}></span>
+              {user?.linkedProviders?.includes("google") ? "Verified Account" : "Unverified Account"}
             </span>
             <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-800 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200">
               <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
-              Command Center Access
+              {user?.role === "operator" ? "Command Center Access" : "Public Awareness Access"}
             </span>
           </div>
         </div>
@@ -382,14 +436,54 @@ export default function Profile() {
                        onChange={handleFileChange}
                        style={{ display: "none" }}
                       />
-                    <button
-                      type="button"
-                      accept="image/*"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-2 rounded-md px-4 py-2 bg-white/80 text-slate-900 hover:bg-white border border-white/60 shadow-md dark:bg-white/10 dark:text-gray-200 dark:hover:bg-white/20 dark:border-white/10"
-                    >
-                      Upload Photo
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="inline-flex items-center gap-2 rounded-md px-4 py-2 bg-white/80 text-slate-900 hover:bg-white border border-white/60 shadow-md dark:bg-white/10 dark:text-gray-200 dark:hover:bg-white/20 dark:border-white/10"
+                      >
+                        Upload Photo
+                      </button>
+
+                      {profileImage && (
+                        <button
+                          type="button"
+                          onClick={handleRemovePhoto}
+                          className="inline-flex items-center gap-2 rounded-md px-4 py-2 bg-rose-500/10 text-rose-700 hover:bg-rose-500/20 border border-rose-500/20 dark:text-rose-300 dark:bg-rose-500/10 dark:hover:bg-rose-500/20"
+                        >
+                          Remove Photo
+                        </button>
+                      )}
+
+                      {user?.linkedProviders?.includes("google") ? (
+                        <button
+                          type="button"
+                          onClick={handleDisconnectGoogle}
+                          disabled={disconnectStatus === "disconnecting"}
+                          className="inline-flex items-center gap-2 rounded-md px-4 py-2 bg-rose-500/10 text-rose-700 hover:bg-rose-500/20 border border-rose-500/20 dark:text-rose-300 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 shadow-sm transition-all"
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z" />
+                          </svg>
+                          <span className="text-sm font-medium">
+                            {disconnectStatus === "disconnecting" ? "Disconnecting..." : "Disconnect Google"}
+                          </span>
+                        </button>
+                      ) : (
+                        <a
+                          href={`${import.meta.env.VITE_API_BASE_URL || "/api"}/auth/google?mode=link`}
+                          className="inline-flex items-center gap-2 rounded-md px-4 py-2 bg-white text-slate-900 hover:bg-slate-50 border border-slate-200 shadow-md transition-all dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 dark:border-slate-700"
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                          </svg>
+                          <span className="text-sm font-medium">Connect Google</span>
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <label className="space-y-2">

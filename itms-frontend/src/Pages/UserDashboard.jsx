@@ -7,6 +7,10 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
+import { useCallback } from "react";
+import { apiRequest } from "../lib/api";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
 // Utility function to calculate distance between two coordinates using the Haversine formula, returning the distance in kilometers. This is used to determine when to perform reverse geocoding based on the user's movement.
 const calcDistanceKm = (lat1, lon1, lat2, lon2) => {
   const toRad = (value) => (value * Math.PI) / 180;
@@ -30,6 +34,7 @@ L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
 });
+
 // Component to auto-center the map based on location or route changes
 function MapAutoCenter({ center, routePath }) {
   const map = useMap();
@@ -43,6 +48,7 @@ function MapAutoCenter({ center, routePath }) {
   }, [center, map, routePath]);
   return null;
 }
+
 // Main user dashboard component
 export default function UserDashboard({ user }) {
   const [locationLabel, setLocationLabel] = useState("Dehradun, India");
@@ -62,6 +68,30 @@ export default function UserDashboard({ user }) {
   const [destinationCoords, setDestinationCoords] = useState(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const lastGeocodeRef = useRef(null);
+
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  useEffect(() => {
+    const checkDark = () => setIsDarkMode(document.documentElement.classList.contains('dark'));
+    checkDark();
+    const observer = new MutationObserver(checkDark);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  const chartColors = {
+    stroke: "#06b6d4",
+    fill: "#06b6d4",
+    grid: isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+    text: isDarkMode ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+    tooltipBg: isDarkMode ? "rgba(0,0,0,0.9)" : "rgba(255,255,255,0.9)",
+    tooltipText: isDarkMode ? "#fff" : "#000"
+  };
+
+  // Real-time data states
+  const [realAlerts, setRealAlerts] = useState([]);
+  const [realMetrics, setRealMetrics] = useState({ accidents: 0, congestion: 0, alerts: 0 });
+  const [realTrend, setRealTrend] = useState([]);
+
   const formatDuration = (totalMin) => {
     const safeMin = Math.max(1, Math.round(totalMin));
     const hours = Math.floor(safeMin / 60);
@@ -70,6 +100,53 @@ export default function UserDashboard({ user }) {
     if (minutes === 0) return `${hours} hr`;
     return `${hours} hr ${minutes} min`;
   };
+
+  const loadRealTimeData = useCallback(async () => {
+    try {
+      const [alertsData, summaryData, trendData] = await Promise.all([
+        apiRequest("/api/alerts"),
+        apiRequest("/api/metrics/summary"),
+        apiRequest("/api/metrics/congestion-trend"),
+      ]);
+
+      // Filter alerts specifically for Dehradun area (Approx bounding box)
+      const DEHRADUN_BOUNDS = {
+        latMin: 30.1, latMax: 30.5,
+        lonMin: 77.8, lonMax: 78.2
+      };
+
+      if (alertsData && Array.isArray(alertsData.alerts)) {
+        const localAlerts = alertsData.alerts.filter(alert => {
+          if (!alert.latitude || !alert.longitude) return false;
+          const lat = parseFloat(alert.latitude);
+          const lon = parseFloat(alert.longitude);
+          return (
+            lat >= DEHRADUN_BOUNDS.latMin && lat <= DEHRADUN_BOUNDS.latMax &&
+            lon >= DEHRADUN_BOUNDS.lonMin && lon <= DEHRADUN_BOUNDS.lonMax
+          );
+        });
+        setRealAlerts(localAlerts.slice(0, 10));
+      }
+
+      if (summaryData && summaryData.metrics) {
+        setRealMetrics(summaryData.metrics);
+      }
+      
+      if (trendData && Array.isArray(trendData.points)) {
+        // Map trend data into objects for the SVG chart
+        const points = trendData.points.map(val => ({ index: Number(val) || 0 }));
+        setRealTrend(points);
+      }
+    } catch (err) {
+      console.error("Real-time fetch failed:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRealTimeData();
+    const inv = setInterval(loadRealTimeData, 5000);
+    return () => clearInterval(inv);
+  }, [loadRealTimeData]);
 // Common card styles for consistency
   const cardClasses =
     "relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-white/70 via-slate-50/40 to-indigo-50/60 dark:from-slate-900/70 dark:via-slate-900/40 dark:to-slate-950/70 border border-white/50 dark:border-cyan-500/30 shadow-2xl shadow-cyan-500/10 dark:shadow-cyan-500/20 backdrop-blur-xl";
@@ -291,15 +368,36 @@ export default function UserDashboard({ user }) {
     : isDehradun
     ? "28 min - Canal Rd"
     : "29 min - Scenic Route";
-  const travelTips = isDehradun
-    ? [
-        "Avoid Rajpur Road between 5:30-6:30 PM today.",
-        "Best route to Clock Tower: EC Road -> Paltan Bazaar.",
-      ]
-    : [
-        "Avoid main arterial roads during the evening peak.",
-        "Try alternate routes to avoid incident hotspots.",
-      ];
+
+  // Dynamic Content derived from real-time metrics
+  const travelTips = useMemo(() => {
+    const tips = [];
+    if (realMetrics.congestion > 60) {
+      tips.push("High congestion detected. Consider delaying travel by 30 mins.");
+    } else {
+      tips.push("Traffic flow is stable. It's a great time to head out.");
+    }
+    
+    if (realAlerts.some(a => a.type === 'accident')) {
+      tips.push("Accident response in progress. Keep emergency lanes clear.");
+    } else {
+      tips.push("No major accidents reported on primary city routes.");
+    }
+
+    if (isDehradun) {
+      tips.push("City Center (Clock Tower) area currently shows moderate flow.");
+    }
+    return tips;
+  }, [realMetrics.congestion, realAlerts, isDehradun]);
+
+  const bestTravelTime = useMemo(() => {
+    if (realMetrics.congestion < 30) return "Right Now";
+    // Mocking a future low-point logic: if now is high, pick 2 hours later
+    const now = new Date();
+    now.setHours(now.getHours() + 2);
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }, [realMetrics.congestion]);
+
   const savedRoutes = isDehradun
     ? [
         "Home -> Clock Tower - 26 min",
@@ -310,17 +408,6 @@ export default function UserDashboard({ user }) {
         "Home -> Downtown - 28 min",
         "Office -> Campus - 18 min",
         "Airport -> Home - 35 min",
-      ];
-  const incidentAlerts = isDehradun
-    ? [
-        "Collision reported - Ring Road near ISBT - 8 min ago",
-        "Heavy congestion - Sahastradhara Rd - 16 min ago",
-        "Roadwork - Mussoorie Rd - 1 hr ago",
-      ]
-    : [
-        "Collision reported - Central Ring - 8 min ago",
-        "Heavy congestion - East Tunnel - 16 min ago",
-        "Roadwork - Riverside Blvd - 1 hr ago",
       ];
 // JSX for rendering the route map with Leaflet, including markers for current location and destination, and a polyline for the route path
   const mapCenter = [locationCoords.lat, locationCoords.lon];
@@ -347,6 +434,24 @@ export default function UserDashboard({ user }) {
       {routePath.length > 1 && (
         <Polyline positions={routePath} pathOptions={{ color: "#06b6d4", weight: 5 }} />
       )}
+      {realAlerts.map((alert) => (
+        <Marker 
+          key={alert.id} 
+          position={[alert.latitude, alert.longitude]}
+          icon={L.divIcon({
+            className: 'custom-icon',
+            html: `<div class="p-1 rounded-full ${alert.type === 'Accident' ? 'bg-rose-500 shadow-rose-500/50' : 'bg-amber-500 shadow-amber-500/50'} shadow-lg border-2 border-white w-4 h-4 animate-bounce"></div>`,
+            iconSize: [20, 20],
+          })}
+        >
+          <Popup>
+            <div className="space-y-1">
+              <p className="font-bold text-slate-900 border-b border-slate-100 pb-1">{alert.type}</p>
+              <p className="text-xs text-slate-600 leading-tight">{alert.message}</p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
     </MapContainer>
   );
 // Main JSX return for the user dashboard, including conditional rendering for the expanded map and various sections for traffic snapshot, travel tips, route planner, saved routes, incident alerts, and location status
@@ -412,9 +517,13 @@ export default function UserDashboard({ user }) {
                     Local traffic conditions updated every few minutes.
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-                  Moderate Flow
+                <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${
+                  realMetrics.congestion > 0 
+                  ? "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200"
+                }`}>
+                  <span className={`h-2 w-2 rounded-full ${realMetrics.congestion > 0 ? "bg-rose-500" : "bg-emerald-500"}`}></span>
+                  {realMetrics.congestion > 0 ? "Heavy Congestion" : "Smooth Flow"}
                 </span>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
@@ -423,19 +532,19 @@ export default function UserDashboard({ user }) {
                     Avg Delay
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-                    +6 min
+                    +{realMetrics.congestion > 0 ? (realMetrics.congestion * 3).toFixed(0) : "2"} min
                   </p>
-                  <p className="text-xs text-slate-700 dark:text-gray-400">Peak: 6:10 PM</p>
+                  <p className="text-xs text-slate-700 dark:text-gray-400">Live system data</p>
                 </div>
                 <div className="rounded-xl border border-white/60 dark:border-cyan-500/20 bg-white/70 dark:bg-black/30 p-4">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-700 dark:text-gray-400">
                     Active Alerts
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-                    3
+                    {realMetrics.alerts}
                   </p>
                   <p className="text-xs text-slate-700 dark:text-gray-400">
-                    {isDehradun ? "Rajpur Road, ISBT" : "Near your area"}
+                    {realAlerts.length > 0 ? `${realAlerts[0].type.toUpperCase()} reported` : "No urgent alerts"}
                   </p>
                 </div>
                 <div className="rounded-xl border border-white/60 dark:border-cyan-500/20 bg-white/70 dark:bg-black/30 p-4">
@@ -443,9 +552,11 @@ export default function UserDashboard({ user }) {
                     Best Time
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-                    8:10 PM
+                    {bestTravelTime}
                   </p>
-                  <p className="text-xs text-slate-700 dark:text-gray-400">Low congestion</p>
+                  <p className="text-xs text-slate-700 dark:text-gray-400">
+                    {realMetrics.congestion < 30 ? "Optimal flow now" : "Projected recovery"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -626,27 +737,73 @@ export default function UserDashboard({ user }) {
             <div className="relative z-10 space-y-4">
               <div>
                 <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-                  Incident Alerts Near You
+                  Incident Alerts
                 </h2>
                 <p className="text-sm text-slate-900 dark:text-gray-300">
-                  Recent accidents or congestion around your routes.
+                  Real-time accidents or congestion within Dehradun, India.
                 </p>
               </div>
-              <div className="space-y-3 text-sm text-slate-900 dark:text-gray-300">
-                {incidentAlerts.map((alert, index) => (
-                  <div
-                    key={index}
-                    className={`rounded-xl px-4 py-3 ${
-                      index === 0
-                        ? "border border-rose-200/60 bg-rose-50/50 dark:border-rose-500/20 dark:bg-rose-500/10"
-                        : index === 1
-                        ? "border border-amber-200/60 bg-amber-50/50 dark:border-amber-500/20 dark:bg-amber-500/10"
-                        : "border border-cyan-200/60 bg-cyan-50/50 dark:border-cyan-500/20 dark:bg-cyan-500/10"
-                    }`}
-                  >
-                    {alert}
+              <div className="space-y-4 text-sm text-slate-900 dark:text-gray-300">
+                {realAlerts.length > 0 ? (
+                  realAlerts.map((alert, index) => (
+                    <div
+                      key={alert.id}
+                      className={`rounded-xl overflow-hidden border ${
+                        alert.type === 'accident'
+                          ? "border-rose-200 bg-rose-50/50 dark:border-rose-500/20 dark:bg-rose-500/5 shadow-lg shadow-rose-500/5"
+                          : "border-amber-200 bg-amber-50/50 dark:border-amber-500/20 dark:bg-amber-500/5 shadow-lg shadow-amber-500/5"
+                      }`}
+                    >
+                      <div className="px-4 py-3">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className={`font-black uppercase text-[9px] tracking-[0.2em] mb-0.5 ${
+                              alert.type === 'accident' ? "text-rose-600 dark:text-rose-400" : "text-amber-600 dark:text-amber-400"
+                            }`}>
+                              {alert.type} detected
+                            </p>
+                            <p className="font-semibold text-slate-900 dark:text-white leading-tight">{alert.message}</p>
+                          </div>
+                          <span className="text-[10px] font-mono opacity-60 bg-white/50 dark:bg-black/20 px-1.5 py-0.5 rounded border border-slate-200 dark:border-white/5">
+                             {alert.latitude && alert.longitude ? `${Number(alert.latitude).toFixed(3)}N, ${Number(alert.longitude).toFixed(3)}E` : ""}
+                          </span>
+                        </div>
+                        
+                        {alert.type === 'accident' && alert.agencyETAs && (
+                          <div className="mt-4 pt-3 border-t border-rose-500/10">
+                            <div className="flex items-center gap-2 mb-3">
+                               <div className="relative flex h-2 w-2">
+                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                               </div>
+                               <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+                                 Emergency Response Active
+                               </span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="bg-white/40 dark:bg-white/5 rounded-lg p-2 text-center border border-rose-500/5">
+                                <p className="text-[8px] uppercase font-bold text-slate-500 dark:text-gray-400 mb-1">Police</p>
+                                <p className="text-xs font-black text-rose-600 dark:text-rose-400">{alert.agencyETAs.police} min</p>
+                              </div>
+                              <div className="bg-white/40 dark:bg-white/5 rounded-lg p-2 text-center border border-rose-500/5">
+                                <p className="text-[8px] uppercase font-bold text-slate-500 dark:text-gray-400 mb-1">Medic</p>
+                                <p className="text-xs font-black text-rose-600 dark:text-rose-400">{alert.agencyETAs.ambulance} min</p>
+                              </div>
+                              <div className="bg-white/40 dark:bg-white/5 rounded-lg p-2 text-center border border-rose-500/5">
+                                <p className="text-[8px] uppercase font-bold text-slate-500 dark:text-gray-400 mb-1">Fire</p>
+                                <p className="text-xs font-black text-rose-600 dark:text-rose-400">{alert.agencyETAs.fire} min</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-emerald-200/60 bg-emerald-50/50 dark:border-emerald-500/20 dark:bg-emerald-500/10 px-4 py-6 text-center">
+                    <p className="text-emerald-800 dark:text-emerald-300 font-medium">No major road incidents detected in your area.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </section>
@@ -691,27 +848,52 @@ export default function UserDashboard({ user }) {
                 Congestion trend for the last 24 hours.
               </p>
             </div>
-            <div className="rounded-xl border border-white/60 dark:border-cyan-500/20 bg-white/60 dark:bg-black/30 p-4">
-              <svg viewBox="0 0 360 140" className="w-full h-40">
-                <defs>
-                  <linearGradient id="userFlowLine" x1="0" x2="1" y1="0" y2="0">
-                    <stop offset="0%" stopColor="#22d3ee" />
-                    <stop offset="100%" stopColor="#f472b6" />
-                  </linearGradient>
-                </defs>
-                <polyline
-                  fill="none"
-                  stroke="url(#userFlowLine)"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  points="10,110 50,90 90,95 130,60 170,70 210,40 250,50 290,35 330,25"
-                />
-                <polyline
-                  fill="rgba(244,114,182,0.12)"
-                  points="10,140 10,110 50,90 90,95 130,60 170,70 210,40 250,50 290,35 330,25 330,140"
-                />
-              </svg>
+            <div className="rounded-xl border border-white/60 dark:border-cyan-500/20 bg-white/60 dark:bg-black/30 p-2" style={{ height: '240px' }}>
+              {realTrend.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={realTrend.map((d, i) => ({ time: i, value: d.index }))}>
+                    <defs>
+                      <linearGradient id="userFlowLine" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={chartColors.stroke} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={chartColors.stroke} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartColors.grid} />
+                    <XAxis hide dataKey="time" />
+                    <YAxis 
+                      domain={[0, 100]} 
+                      tick={{ fill: chartColors.text, fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: chartColors.tooltipBg, 
+                        border: 'none', 
+                        borderRadius: '8px', 
+                        color: chartColors.tooltipText, 
+                        fontSize: '12px',
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                      }}
+                      itemStyle={{ color: chartColors.stroke }}
+                      labelStyle={{ display: 'none' }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke={chartColors.stroke} 
+                      fillOpacity={isDarkMode ? 0.3 : 0.1} 
+                      fill="url(#userFlowLine)" 
+                      strokeWidth={3}
+                      animationDuration={1500}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-xs opacity-50 uppercase tracking-tighter">
+                  Accumulating historical trend data...
+                </div>
+              )}
             </div>
           </div>
         </section>

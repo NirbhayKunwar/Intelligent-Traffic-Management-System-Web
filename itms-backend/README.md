@@ -1,74 +1,62 @@
-# ITMS Backend
+# 🛠️ ITMS Backend API Service
 
-Express + LowDB backend for authentication, profiles, and Google OAuth.
+The core engine of the **Intelligent Traffic Management System**, providing high-performance REST APIs for user authentication, real-time traffic monitoring, and emergency response management.
 
-## Requirements
+---
 
-- Node.js 18+ (ESM support)
-- npm
+## 🚀 Overview
+Built with **Node.js** and **Express**, this service handles:
+- **Identity Proxy**: JWT & Google OAuth 2.0 (Passport.js) session management with link/unlink capabilities.
+- **AI Orchestration**: Proxies inference requests to the Python YOLO microservice with real-time progress tracking.
+- **Emergency Dispatch**: Automated Parallel SMTP broadcasts via Nodemailer upon accident verification.
+- **Media Management**: Intelligent streaming via **Cloudinary** for profile photos, incident snapshots, and video analysis.
+- **Persistence**: High-availability cloud storage using **MongoDB Atlas**.
 
-## Tooling Versions
+---
 
-- Node.js: 18+
-- Express: 5.2.1
-- Passport: 0.7.0
-- Passport Google OAuth: 2.0.0
-- LowDB: 7.0.1
-- JSON Web Token: 9.0.3
-- bcryptjs: 3.0.3
-- nanoid: 5.1.7
-- CORS: 2.8.6
-- cookie-parser: 1.4.7
-- express-session: 1.19.0
-- mongoose: 9.3.3
+## 🛠️ Tech Stack
+| Component | Technology |
+|---|---|
+| Runtime | Node.js (ESM) |
+| Framework | Express 5.x |
+| Database | MongoDB Atlas (Mongoose) |
+| Auth | Passport.js + JWT + bcryptjs |
+| Alerts | Nodemailer (Gmail SMTP) |
+| Media | Cloudinary SDK + Multer |
 
-## Quick Start
+---
 
-1. Install dependencies: `npm install`
-2. Configure environment: edit `itms-backend/data/.env`
-3. Start the server: `node server.js`
+## ⚙️ Project Configuration
+The backend requires a `.env` file located in `itms-backend/data/`. See `.env.example` for the full template.
 
-The server runs on `http://localhost:4000` by default.
+### Core Variables:
+- `MONGODB_URI`: Your MongoDB Atlas connection string.
+- `CLOUDINARY_URL`: Cloudinary credentials for media hosting.
+- `JWT_SECRET`: For secure session signing.
+- `MODEL_SERVICE_URL`: URL of the FastAPI AI worker.
 
-## Environment Variables
+---
 
-Location: `itms-backend/data/.env`
+## 📁 Key Modules
 
-Required:
+### 🔐 Auth & Profiling
+- **Self-Healing Auth**: Detects and merges accounts when users switch between Email and Google login.
+- **Profile Hub**: Manage avatars and connected accounts via Cloudinary.
 
-- `PORT`
-- `JWT_SECRET`
-- `CLIENT_ORIGIN`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
+### 🤖 Inference Pipeline
+- **Vehicle Count Thresholds**: Transitioned from percentage-based logic to absolute car counts (e.g., alert if count > 15).
+- **Progress Sync**: Background workers update the database every 2 seconds to provide smooth UI progress bars.
 
-Recommended:
+### 📡 Emergency Protocol
+1. AI identifies an accident in `model-service`.
+2. Backend triggers the `EmergencyDispatchService`.
+3. System fetches **Verified Citizens** (Google-linked) and sends parallel email alerts.
+4. Alerts are geo-pinned and stored for historical analytics.
 
-- `SERVER_URL` (example: `http://localhost:4000`)
-- `GOOGLE_CALLBACK_URL` (example: `http://localhost:4000/auth/google/callback`)
+---
 
-## Google OAuth Setup
+## 🛠️ Getting Started
 
-In Google Cloud Console, add the following Authorized Redirect URI:
-
-- `http://localhost:4000/auth/google/callback`
-
-If you change ports, update both the `.env` values and the Google Console URI.
-
-## Data Storage
-
-Local data is stored in:
-
-- `itms-backend/data/db.json`
-
-## API Overview
-
-- `POST /api/auth/signup`
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `GET /api/auth/me`
-- `PUT /api/user`
-- `DELETE /api/user`
-- `POST /api/user/update-profile-pic`
-- `GET /auth/google`
-- `GET /auth/google/callback`
+1. **Install**: `npm install`
+2. **Environment**: Configure your `.env` in the `data/` directory.
+3. **Run**: `node server.js`

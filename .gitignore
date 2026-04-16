@@ -1,25 +1,107 @@
-# Node modules
-**/node_modules
+# ============================================================
+# ITMS — Intelligent Traffic Management System
+# Root .gitignore
+# ============================================================
 
-# Env files
-**/.env
-**/.env.local
-**/.env.*.local
-
-# Backend secrets specifically
-itms-backend/data/.env
-itms-backend/data/db.json
+# ─── Node / JavaScript ──────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.pnp/
+.pnp.js
 
 # Build outputs
-**/dist
-**/build
+dist/
+build/
+.vite/
+.next/
 
-# Logs
-**/*.log
+# ─── Python ─────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
 
-# OS junk
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.Python
+
+# Python packaging
+*.egg-info/
+*.egg
+dist/
+*.whl
+
+# ─── Secrets & Environment Variables (CRITICAL) ─────────────
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+itms-backend/data/.env
+
+# ─── Database (contains real user data) ─────────────────────
+# Keep a db.example.json in repo but ignore the live one
+itms-backend/data/db.json
+
+# ─── Uploaded User Files ────────────────────────────────────
+itms-backend/uploads/
+
+# ─── Large AI Model Weights ─────────────────────────────────
+# YOLOv5/YOLOv8 .pt files are 6–170MB — too large for Git
+# Download them separately via requirements or release assets
+model-service/*.pt
+model-service/*.onnx
+model-service/weights/
+
+# ─── Sample Video Datasets ──────────────────────────────────
+# Large .mp4 files should NOT be committed to Git.
+# Provide download instructions in README instead.
+datasets/**/*.mp4
+datasets/**/*.avi
+datasets/**/*.mkv
+datasets/**/*.mov
+datasets/**/*.webm
+
+# ─── Logs ───────────────────────────────────────────────────
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ─── OS Specific ────────────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
 
-# Local editor settings
-.vscode/settings.json
+# ─── IDE / Editor ────────────────────────────────────────────
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.user
+*.sublime-project
+*.sublime-workspace
+*.ntvs*
+*.njsproj
+*.sln
+
+# ─── Misc ───────────────────────────────────────────────────
+*.bak
+*.tmp
+*.sw?
+.cache/

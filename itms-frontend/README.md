@@ -1,45 +1,57 @@
-# ITMS Frontend
+# 🎨 ITMS Frontend Client
 
-Vite + React frontend for the Intelligent Traffic Management System (ITMS).
+The user interface for the **Intelligent Traffic Management System**, built with **React** and **Vite** to provide a high-frequency, glassmorphic dashboard experience.
 
-## Requirements
+---
 
-- Node.js 18+
-- npm
+## 🚀 Overview
+The frontend is designed for both city operators and citizens, offering:
+- **Operator Command Center**: Real-time management of CCTV cameras and AI model execution with live progress tracking.
+- **Citizen Alert Portal**: Interactive map with live incident feeds and emergency response statuses.
+- **Data Visualization**: Dynamic analytics using **Recharts** to plot vehicle counts and accident trends.
+- **Micro-Animation Engine**: Premium UI transitions and responsive feedback for high-stress monitoring environments.
 
-## Tooling Versions
+---
 
-- Node.js: 18+
-- Vite: 8.0.1
-- React: 19.2.4
-- React DOM: 19.2.4
-- React Router DOM: 7.13.2
-- Tailwind CSS: 4.2.2
-- Leaflet: 1.9.4
-- React Leaflet: 5.0.0
-- Framer Motion: 12.38.0
-- Lucide React: 1.7.0
+## 🛠️ Tech Stack
+| Component | Technology |
+|---|---|
+| Library | React 18 |
+| Build Tool | Vite |
+| Visualization | Recharts (Area/Bar) |
+| Maps | Leaflet + React Leaflet |
+| Media | Cloudinary (Bundled Samples) |
+| Theme | Vanilla CSS (Glassmorphism / Dark Mode) |
 
-## Quick Start
+---
 
-1. Install dependencies: `npm install`
-2. Start the dev server: `npm run dev`
+## 📍 Advanced Mapping
+We have implemented a **Zero-Jitter Navigation** system to ensure a smooth operator experience:
+- **Intent-Based Movement**: The map only triggers auto-focus when specifically requested (e.g., selecting a new camera).
+- **Manual Pinning**: High-precision coordinate picking remains stationary during background data refreshes.
+- **Responsive Markers**: Instant visual feedback for incidents, including "Services Alerted" status.
 
-The app runs on `http://localhost:5173` by default.
+---
 
-## API Configuration
+## 📂 Key Features
 
-By default, Vite proxies `/api` requests to the backend:
+### 🚦 Smart Inference Jobs
+- **Real-Time Polling**: The dashboard polls the backend every 2 seconds for high-fidelity progress updates.
+- **Vehicle Count Controls**: Direct threshold management using absolute vehicle counts for clear operational boundaries.
 
-- `http://localhost:4000` (see `itms-frontend/vite.config.js`)
+### 👤 Premium Profile Hub
+- **Cloudinary Integration**: Instant avatar updates and preview.
+- **Identity Linking**: Interactive UI for connecting or disconnecting Google Accounts with real-time state persistence.
 
-If you want to hit a different backend URL, set:
+---
 
-- `VITE_API_BASE_URL` in a local env file (for example `itms-frontend/.env.local`)
-
-Example: `VITE_API_BASE_URL=http://localhost:4000`
-
-## Notes
-
-- The frontend expects the backend to set auth cookies (JWT).
-- Google OAuth redirects back to the frontend `CLIENT_ORIGIN` defined in the backend `.env`.
+## ⚙️ Setup
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+2. **Development Run**:
+   ```bash
+   npm run dev
+   ```
+   > The app connects to the API on `http://localhost:4000` by default.

@@ -13,7 +13,8 @@ const GOOGLE_AUTH_BASE = (
 
 // Function to build the Google authentication URL with optional query parameters
 function buildGoogleAuthUrl(params) {
-  const url = new URL(`${GOOGLE_AUTH_BASE}/auth/google`);
+  const base = import.meta.env.VITE_API_BASE_URL || "/api";
+  const url = new URL(`${base}/auth/google`, window.location.origin);
   Object.entries(params || {}).forEach(([key, value]) => {
     if (value) {
       url.searchParams.set(key, value);
