@@ -47,6 +47,7 @@ mongoose.connect(MONGODB_URI).then(() => {
 const userSchema = new mongoose.Schema({
   id: { type: String, default: () => nanoid() },
   email: { type: String, required: true, unique: true },
+  googleEmail: { type: String, default: "" },
   password: { type: String },
   name: { type: String },
   role: { type: String, enum: ["user", "operator"], default: "user" },
@@ -175,6 +176,17 @@ async function sendAccidentEmail(recipientEmail, accidentDetails) {
     console.log("Email service skip: Credentials missing in .env (EMAIL_USER/EMAIL_PASS)");
     return;
   }
+
+  const lat = Number(accidentDetails?.latitude);
+  const lng = Number(accidentDetails?.longitude);
+  const hasCoords = Number.isFinite(lat) && Number.isFinite(lng) && !(lat === 0 && lng === 0);
+  const mapsUrl = hasCoords ? `https://maps.google.com/?q=${lat},${lng}` : "";
+  const locationDetailsHtml = hasCoords
+    ? `
+        <p><strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
+        <p><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">Open in Google Maps</a></p>
+      `
+    : "";
   
   const mailOptions = {
     from: `"ITMS Emergency Alerts" <${EMAIL_USER}>`,
@@ -187,6 +199,7 @@ async function sendAccidentEmail(recipientEmail, accidentDetails) {
         <hr/>
         <p><strong>Incident:</strong> Accident detected with high confidence.</p>
         <p><strong>Location:</strong> ${accidentDetails.location}</p>
+        ${locationDetailsHtml}
         <p><strong>Details:</strong> ${accidentDetails.message}</p>
         <hr/>
         <h3 style="color: #333;">Emergency Response Status:</h3>
@@ -215,7 +228,7 @@ class EmergencyDispatchService {
   /**
    * Orchestrates a multi-agency response and broadcasts alerts to all verified citizens.
    */
-  async triggerFullResponse(locationStr, message) {
+  async triggerFullResponse(locationStr, message, incidentGeo = {}) {
     const etas = {
       police: Math.floor(Math.random() * (5 - 2 + 1)) + 2,    // 2-5 mins
       ambulance: Math.floor(Math.random() * (7 - 4 + 1)) + 4, // 4-7 mins
@@ -232,15 +245,43 @@ class EmergencyDispatchService {
     const allUsers = await User.find();
     console.log(`🔍 DIAGNOSTIC: Total users in DB: ${allUsers.length}`);
     
-    const verifiedUsers = allUsers.filter(
-      (u) => Array.isArray(u.linkedProviders) && u.linkedProviders.includes("google") && u.email
-    );
+    const googleLinkedUsers = allUsers.filter((u) => {
+      const providers = Array.isArray(u.linkedProviders) ? u.linkedProviders : [];
+      return providers.includes("google") || Boolean(u.googleId);
+    });
 
-    if (verifiedUsers.length > 0) {
-      console.log(`📡 BROADCAST: Found ${verifiedUsers.length} verified citizens. Sending alerts...`);
+    const recipients = [];
+    for (const user of googleLinkedUsers) {
+      const providers = Array.isArray(user.linkedProviders) ? user.linkedProviders : [];
+      const normalizedGoogleEmail = String(user.googleEmail || "").trim().toLowerCase();
+
+      // Primary route: explicit Google mailbox captured at OAuth time.
+      let recipient = normalizedGoogleEmail;
+
+      // Legacy fallback: older records may be Google-linked but missing googleEmail.
+      // Use stored email to avoid dropping emergency alerts, then backfill googleEmail.
+      if (!recipient) {
+        const fallbackEmail = String(user.email || "").trim().toLowerCase();
+        if (fallbackEmail) {
+          recipient = fallbackEmail;
+          user.googleEmail = fallbackEmail;
+          if (!providers.includes("google")) user.linkedProviders = [...providers, "google"];
+          user.save().catch((err) => {
+            console.warn(`Google email backfill failed for user ${user.id}:`, err.message);
+          });
+        }
+      }
+
+      if (recipient) recipients.push(recipient);
+    }
+
+    if (recipients.length > 0) {
+      console.log(`📡 BROADCAST: Found ${recipients.length} verified citizens. Sending alerts...`);
       const details = {
         location: locationStr,
         message,
+        latitude: incidentGeo.latitude,
+        longitude: incidentGeo.longitude,
         etas: {
           police: etas.police,
           ambulance: etas.ambulance,
@@ -249,7 +290,7 @@ class EmergencyDispatchService {
       };
       
       // Send emails in parallel
-      Promise.all(verifiedUsers.map(user => sendAccidentEmail(user.email, details))).catch(err => {
+      Promise.all(recipients.map((email) => sendAccidentEmail(email, details))).catch(err => {
         console.error("❌ BROADCAST ERROR:", err);
       });
     } else {
@@ -423,11 +464,13 @@ async function linkGoogleProvider(userId, googleData) {
   if (otherUser) {
     console.log(`♻️ MERGE: Moving Google ID ${googleData.oauthId} from ${otherUser.email} to ${user.email}`);
     otherUser.googleId = null;
+    otherUser.googleEmail = "";
     otherUser.linkedProviders = (otherUser.linkedProviders || []).filter(p => p !== "google");
     await otherUser.save();
   }
 
   user.googleId = googleData.oauthId;
+  user.googleEmail = googleData.email || user.googleEmail || "";
   if (!user.linkedProviders.includes("google")) {
     user.linkedProviders.push("google");
   }
@@ -459,6 +502,10 @@ async function upsertGoogleUser({ email, fullName, profilePic, role, organizatio
       user.googleId = oauthId;
       changed = true;
     }
+    if (email && user.googleEmail !== email) {
+      user.googleEmail = email;
+      changed = true;
+    }
     if (!user.linkedProviders.includes("google")) {
       user.linkedProviders.push("google");
       changed = true;
@@ -472,6 +519,7 @@ async function upsertGoogleUser({ email, fullName, profilePic, role, organizatio
 
   user = await User.create({
     email,
+    googleEmail: email,
     name: fullName || email.split("@")[0] || "User",
     password: passwordHash,
     role: normalizedRole,
@@ -711,7 +759,11 @@ async function addAlertsFromResult(job, result) {
     
     // Dispatch
     const dispatcher = new EmergencyDispatchService();
-    const agencyETAs = await dispatcher.triggerFullResponse(job.sourceLabel || "Unknown Location", alertMsg);
+    const agencyETAs = await dispatcher.triggerFullResponse(
+      job.sourceLabel || "Unknown Location",
+      alertMsg,
+      { latitude: lat, longitude: lng }
+    );
 
     await Alert.create({
       type: "accident",
@@ -1427,6 +1479,7 @@ app.post("/api/auth/google/disconnect", requireAuth, async (req, res) => {
 
   user.linkedProviders = user.linkedProviders.filter(p => p !== "google");
   user.googleId = null;
+  user.googleEmail = "";
   await user.save();
   return res.json({ message: "Google account disconnected successfully.", user });
 });
@@ -1470,3 +1523,4 @@ process.on("uncaughtException", (err) => {
 process.on("unhandledRejection", (reason, promise) => {
   console.error("❌ UNHANDLED REJECTION at:", promise, "reason:", reason);
 });
+
