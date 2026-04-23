@@ -389,7 +389,11 @@ export default function Dashboard() {
       try {
         const response = await apiRequest("/api/cameras/import-sample", {
           method: "POST",
-          body: { sampleId: selectedSampleId },
+          body: {
+            sampleId: selectedSampleId,
+            latitude: mapDraftCoords?.[0] ?? 30.3165,
+            longitude: mapDraftCoords?.[1] ?? 78.0322,
+          },
         });
         const camera = response?.camera;
         if (camera) {

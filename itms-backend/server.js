@@ -1080,6 +1080,8 @@ app.get("/api/samples/videos", requireAuth, async (req, res) => {
 });
 app.post("/api/cameras/import-sample", requireAuth, requireOperator, async (req, res) => {
   const sampleId = String(req.body?.sampleId || "");
+  const latitude = req.body?.latitude;
+  const longitude = req.body?.longitude;
   if (!sampleId) return res.status(400).json({ message: "sampleId is required." });
 
   const sample = getSampleVideos().videos.find((entry) => entry.id === sampleId);
@@ -1090,6 +1092,10 @@ app.post("/api/cameras/import-sample", requireAuth, requireOperator, async (req,
     streamUrl: sample.path,
     stream: "FILE",
     status: "Online",
+    coordinates: {
+      lat: Number(latitude) || 30.3165,
+      lng: Number(longitude) || 78.0322
+    },
     type: sample.modelType
   });
 
@@ -1523,4 +1529,3 @@ process.on("uncaughtException", (err) => {
 process.on("unhandledRejection", (reason, promise) => {
   console.error("❌ UNHANDLED REJECTION at:", promise, "reason:", reason);
 });
-
