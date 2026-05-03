@@ -745,7 +745,7 @@ export default function UserDashboard({ user }) {
               </div>
               <div className="space-y-4 text-sm text-slate-900 dark:text-gray-300">
                 {realAlerts.length > 0 ? (
-                  realAlerts.map((alert, index) => (
+                  realAlerts.map((alert) => (
                     <div
                       key={alert.id}
                       className={`rounded-xl overflow-hidden border ${

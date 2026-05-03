@@ -698,29 +698,7 @@ export default function Dashboard() {
     "relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-white/70 via-slate-50/40 to-indigo-50/60 dark:from-slate-900/70 dark:via-slate-900/40 dark:to-slate-950/70 border border-white/50 dark:border-cyan-500/30 shadow-2xl shadow-cyan-500/10 dark:shadow-cyan-500/20 backdrop-blur-xl";
   const compactCardClasses =
     "relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-white/70 via-slate-50/40 to-indigo-50/60 dark:from-slate-900/70 dark:via-slate-900/40 dark:to-slate-950/70 border border-white/50 dark:border-cyan-500/30 shadow-2xl shadow-cyan-500/10 dark:shadow-cyan-500/20 backdrop-blur-xl";
-  const trendViewBoxWidth = 420;
-  const trendViewBoxHeight = 160;
-  const trendPaddingX = 24;
-  const trendPaddingY = 20;
-  const trendGraphWidth = trendViewBoxWidth - trendPaddingX * 2;
-  const trendGraphHeight = trendViewBoxHeight - trendPaddingY * 2;
   const safeTrend = congestionTrend.length ? congestionTrend : [0, 0];
-  const congestionTrendPoints = safeTrend
-    .map((value, index) => {
-      const x =
-        trendPaddingX +
-        (index * trendGraphWidth) / Math.max(safeTrend.length - 1, 1);
-      const y = trendPaddingY + (1 - value / 100) * trendGraphHeight;
-      return `${x},${y}`;
-    })
-    .join(" ");
-  const congestionTrendAreaPoints = `${trendPaddingX},${
-    trendViewBoxHeight - trendPaddingY
-  } ${congestionTrendPoints} ${trendViewBoxWidth - trendPaddingX},${
-    trendViewBoxHeight - trendPaddingY
-  }`;
-  const congestionThresholdY =
-    trendPaddingY + (1 - congestionThreshold / 100) * trendGraphHeight;
   const opsMetrics = [
     {
       key: "accidents",
@@ -744,7 +722,6 @@ export default function Dashboard() {
         "bg-gradient-to-t from-fuchsia-500/70 via-purple-500/70 to-indigo-400/70 dark:from-fuchsia-500/60 dark:via-purple-500/60 dark:to-indigo-400/60 shadow-purple-500/20",
     },
   ];
-  const maxOpsMetric = Math.max(...opsMetrics.map((metric) => metric.value), 1);
   const formatTime = (value) => {
     if (!value) return "--";
     const date = new Date(value);
@@ -1095,7 +1072,7 @@ export default function Dashboard() {
                       }
                       className="rounded-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white shadow-lg shadow-cyan-500/20 hover:from-cyan-600 hover:to-indigo-600"
                     >
-                      {isRunningCongestion ? "Running..." : "Run Congestion Model"}
+                      {isRunningCongestion ? "Running..." : "Run"}
                     </button>
                   </div>
                 </div>
