@@ -1072,7 +1072,7 @@ export default function Dashboard() {
                       }
                       className="rounded-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white shadow-lg shadow-cyan-500/20 hover:from-cyan-600 hover:to-indigo-600"
                     >
-                      {isRunningCongestion ? "Running..." : "Run"}
+                      {isRunningCongestion ? "Running..." : "Run congestion model"}
                     </button>
                   </div>
                 </div>
