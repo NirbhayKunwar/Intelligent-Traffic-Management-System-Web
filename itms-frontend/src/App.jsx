@@ -9,6 +9,8 @@ import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./Pages/Login";
 import SignUp from "./Pages/Signup";
+import ForgotPassword from "./Pages/ForgotPassword";
+import ResetPassword from "./Pages/ResetPassword";
 import Terms from "./Pages/Terms";
 import Privacy from "./Pages/Privacy";
 import Security from "./Pages/Security";
@@ -50,8 +52,10 @@ function AppShell({ scrolled }) {
   // The useLocation hook is used to access the current location object, which contains information about the current URL.
   const location = useLocation();
   // The hideNavbar and hideFooter variables are set to true if the current pathname is either "/login" or "/signup". This is used to conditionally render the Navbar and Footer components, hiding them on the login and signup pages for a cleaner user interface.
-  const hideNavbar = location.pathname === "/login" || location.pathname === "/signup";
-  const hideFooter = location.pathname === "/login" || location.pathname === "/signup";
+  const authPagePaths = ["/login", "/signup", "/forgot-password"];
+  const isResetPasswordPage = location.pathname.startsWith("/reset-password/");
+  const hideNavbar = authPagePaths.includes(location.pathname) || isResetPasswordPage;
+  const hideFooter = authPagePaths.includes(location.pathname) || isResetPasswordPage;
 // The Routes component defines the different routes of the application, rendering the appropriate components based on the current path. The login and signup routes are defined to ensure that the Navbar is hidden on these pages, while still allowing the scroll listener to function properly, providing a consistent user experience across all pages of the application.
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 text-slate-900 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100 transition duration-300">
@@ -69,6 +73,8 @@ function AppShell({ scrolled }) {
 {/* The login and signup routes are defined here to ensure that the Navbar is hidden on these pages, while still allowing the scroll listener to function properly. This way, the Navbar can change its appearance based on the scroll position even when it is not visible, providing a consistent user experience across all pages of the application. */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/case-study" element={<CaseStudy />} />
         <Route path="/privacy" element={<Privacy />} />

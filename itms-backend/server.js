@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import crypto from "node:crypto";
 import { createReadStream, existsSync, mkdirSync, readdirSync, statSync, unlink } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -56,7 +57,9 @@ const userSchema = new mongoose.Schema({
   linkedProviders: { type: [String], default: [] },
   googleId: { type: String },
   authProvider: { type: String },
-  passwordSet: { type: Boolean }
+  passwordSet: { type: Boolean },
+  passwordResetToken: { type: String },
+  passwordResetExpires: { type: Date }
 }, { timestamps: true, id: false }); // Disable virtual id to avoid conflict
 const User = mongoose.model("User", userSchema);
 
@@ -170,6 +173,34 @@ const transporter = nodemailer.createTransport({
     pass: EMAIL_PASS,
   },
 });
+// For password resets, we send a simple email with the reset link. In production, this should be a secure, single-use token link.
+async function sendPasswordResetEmail(recipientEmail, resetLink) {
+  if (!EMAIL_USER || !EMAIL_PASS) {
+    console.log(`Password reset link for ${recipientEmail}: ${resetLink}`);
+    return;
+  }
+
+  const mailOptions = {
+    from: `"ITMS Security" <${EMAIL_USER}>`,
+    to: recipientEmail,
+    subject: "Reset your ITMS password",
+    html: `
+      <div style="font-family: sans-serif; padding: 20px; border: 1px solid #d7dee8; border-radius: 8px;">
+        <h2 style="color: #0f172a;">Reset your password</h2>
+        <p>We received a request to reset the password for your ITMS account.</p>
+        <p>
+          <a href="${resetLink}" target="_blank" rel="noopener noreferrer"
+            style="display: inline-block; padding: 10px 14px; border-radius: 6px; background: #0891b2; color: #ffffff; text-decoration: none;">
+            Reset password
+          </a>
+        </p>
+        <p>This link expires in 1 hour. If you did not request this, you can ignore this email.</p>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
 
 async function sendAccidentEmail(recipientEmail, accidentDetails) {
   if (!EMAIL_USER || !EMAIL_PASS) {
@@ -921,6 +952,72 @@ app.post("/api/auth/login", async (req, res) => {
   const token = signToken(user);
   setAuthCookie(res, token);
   return res.json({ user: sanitizeUser(user) });
+});
+// Endpoint to handle password reset requests, generating a secure token and sending a reset link via email. The token is hashed and stored in the database with an expiration time for security.
+app.post("/api/auth/forgot-password", async (req, res) => {
+  const { email } = req.body || {};
+  if (!email) return res.status(400).json({ message: "Email is required." });
+
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const genericMessage = "If an account exists for this email, a password reset link has been sent.";
+  const user = await User.findOne({ email: normalizedEmail });
+
+  if (!user) {
+    return res.json({ message: genericMessage });
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  user.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+  user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
+  await user.save();
+
+  const resetLink = `${CLIENT_ORIGIN.replace(/\/$/, "")}/reset-password/${resetToken}`;
+
+  try {
+    await sendPasswordResetEmail(user.email, resetLink);
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+    console.error("Password reset email failed:", err.message);
+    return res.status(500).json({ message: "Could not send password reset email. Please try again later." });
+  }
+
+  const response = { message: genericMessage };
+  if (!isProduction && (!EMAIL_USER || !EMAIL_PASS)) {
+    response.resetLink = resetLink;
+  }
+  return res.json(response);
+});
+
+app.post("/api/auth/reset-password", async (req, res) => {
+  const { token, password, newPassword } = req.body || {};
+  const nextPassword = String(newPassword || password || "");
+
+  if (!token) return res.status(400).json({ message: "Reset token is required." });
+  if (!nextPassword) return res.status(400).json({ message: "New password is required." });
+  if (nextPassword.length < 8) return res.status(400).json({ message: "Password must be at least 8 characters." });
+
+  const hashedToken = crypto.createHash("sha256").update(String(token)).digest("hex");
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: new Date() },
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: "Password reset link is invalid or has expired." });
+  }
+
+  user.password = await bcrypt.hash(nextPassword, 10);
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  user.passwordSet = true;
+  if (!Array.isArray(user.linkedProviders)) user.linkedProviders = [];
+  if (!user.linkedProviders.includes("password")) user.linkedProviders.push("password");
+  if (!user.authProvider) user.authProvider = "password";
+
+  await user.save();
+  return res.json({ message: "Password reset successfully.", user: sanitizeUser(user) });
 });
 
 app.post("/api/auth/logout", (req, res) => {
