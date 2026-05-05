@@ -53,7 +53,7 @@ def _load_congestion_model() -> YOLO:
         try:
             _congestion_model = YOLO(CONGESTION_MODEL_PATH)
         except Exception as e:
-            # If the custom model fails (e.g. YOLOv5 incompatibility), fallback to standard yolov8n
+            # If the custom model fails, fallback to standard yolov8n
             print(f"FAILED TO LOAD CUSTOM MODEL {CONGESTION_MODEL_PATH}: {e}. Falling back to yolov8n.pt")
             _congestion_model = YOLO("yolov8n.pt")
     return _congestion_model
