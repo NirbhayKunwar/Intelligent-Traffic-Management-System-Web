@@ -4,9 +4,10 @@
 FROM node:18-slim AS frontend-builder
 WORKDIR /usr/src/app
 
-# Copy monorepo configuration
-COPY package.json ./
+# Copy monorepo configuration and lockfile
+COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
+COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
 # Install dependencies
@@ -26,7 +27,8 @@ RUN npm run build
 FROM node:18-slim AS backend-builder
 WORKDIR /usr/src/app
 
-COPY package.json ./
+COPY package.json package-lock.json ./
+COPY apps/web/package.json ./apps/web/
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
