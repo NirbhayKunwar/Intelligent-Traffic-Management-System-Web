@@ -1,4 +1,5 @@
 import { existsSync, unlink } from "fs";
+import { Readable } from "stream";
 import { Upload } from "./upload.model.js";
 import { cloudinary, uploadVideo } from "../../config/cloudinary.js";
 import { streamLocalVideo } from "../../utils/videoStreamer.js";
@@ -29,26 +30,47 @@ export function uploadVideoFile(req, res, next) {
     if (!req.file) return res.status(400).json({ message: "No video file uploaded." });
 
     try {
-      const record = await Upload.create({
-        originalName: req.file.originalname,
-        filename: req.file.filename,
-        path: req.file.path, // Cloudinary URL
-        cloudinaryId: req.file.filename,
-        size: req.file.size
-      });
-
-      return res.status(201).json({
-        upload: {
-          id: record.id,
-          originalName: record.originalName,
-          filename: record.filename,
-          size: record.size,
-          createdAt: record.timestamp,
-          latitude: record.coordinates.lat,
-          longitude: record.coordinates.lng,
-          previewUrl: record.path,
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: "video",
+          folder: "itms_uploads",
         },
-      });
+        async (error, result) => {
+          if (error) {
+            return res.status(500).json({ message: "Cloudinary upload failed: " + error.message });
+          }
+
+          try {
+            const record = await Upload.create({
+              originalName: req.file.originalname,
+              filename: result.public_id,
+              path: result.secure_url,
+              cloudinaryId: result.public_id,
+              size: req.file.size,
+            });
+
+            return res.status(201).json({
+              upload: {
+                id: record.id,
+                originalName: record.originalName,
+                filename: record.filename,
+                size: record.size,
+                createdAt: record.timestamp,
+                latitude: record.coordinates.lat,
+                longitude: record.coordinates.lng,
+                previewUrl: record.path,
+              },
+            });
+          } catch (dbErr) {
+            next(dbErr);
+          }
+        }
+      );
+
+      const readableStream = new Readable();
+      readableStream.push(req.file.buffer);
+      readableStream.push(null);
+      readableStream.pipe(uploadStream);
     } catch (err) {
       next(err);
     }
