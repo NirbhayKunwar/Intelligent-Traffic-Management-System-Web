@@ -19,7 +19,7 @@ COPY apps/web/ ./apps/web/
 
 # npm run build --workspace automatically adds node_modules/.bin to PATH
 # This is identical to what runs successfully in local dev
-WORKDIR /usr/src/app
+
 RUN npm run build --workspace=apps/web
 
 # ==============================================================================
