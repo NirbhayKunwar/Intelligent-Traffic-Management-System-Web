@@ -10,7 +10,7 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 
 # Install dependencies
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY packages/shared/ ./packages/shared/
@@ -30,7 +30,7 @@ COPY package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
-RUN npm install --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps
 
 # ==============================================================================
 # STAGE 3: Final Runtime Image
