@@ -29,6 +29,8 @@ COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
+# Copy the shared source so workspace can be resolved
+COPY packages/shared/ ./packages/shared/
 
 RUN npm install --omit=dev --legacy-peer-deps
 
