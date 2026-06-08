@@ -656,8 +656,8 @@ export default function OperatorDashboard() {
                 />
               )}
 
-              {/* Leaflet Map (Map tab) */}
-              {(activeTab === "map" || activeTab === "settings") && (
+              {/* Leaflet Map (Overview, Map, or Settings tab) */}
+              {(activeTab === "overview" || activeTab === "map" || activeTab === "settings") && (
                 <TrafficMap
                   isDarkMode={isDarkMode}
                   cameras={cameras}
