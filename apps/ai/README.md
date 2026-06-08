@@ -1,3 +1,13 @@
+---
+title: ITMS AI
+emoji: 🚦
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # ITMS Model Service
 
 FastAPI service that runs the ML models and returns normalized JSON outputs for the Capstone backend.
