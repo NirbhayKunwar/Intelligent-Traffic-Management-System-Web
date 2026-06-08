@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
+// CloudinaryStorage import removed; using memory storage.
 import multer from "multer";
 import { nanoid } from "nanoid";
 
@@ -19,23 +19,9 @@ cloudinary.api.root_folders()
 
 const MAX_UPLOAD_SIZE_MB = Number(process.env.MAX_UPLOAD_SIZE_MB || 300);
 
-export const profilePicStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "itms_profiles",
-    allowed_formats: ["jpg", "png", "jpeg"],
-    public_id: (req, file) => `profile_${req.userId || nanoid()}`,
-  },
-});
+export const profilePicStorage = multer.memoryStorage();
 
-export const videoUploadStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "itms_uploads",
-    resource_type: "video",
-    public_id: (req, file) => `video_${Date.now()}_${nanoid(6)}`,
-  },
-});
+export const videoUploadStorage = multer.memoryStorage();
 
 export const uploadProfilePic = multer({ storage: profilePicStorage });
 export const uploadVideo = multer({
