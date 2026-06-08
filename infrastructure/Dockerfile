@@ -10,11 +10,12 @@ COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
-# Install all dependencies for Linux platform
-RUN npm ci --legacy-peer-deps
-# Now copy source code needed for frontend build
+# Copy source code needed for all packages
 COPY packages/shared/ ./packages/shared/
 COPY apps/web/ ./apps/web/
+COPY apps/api/ ./apps/api/
+# Install all dependencies for Linux platform
+RUN npm ci --legacy-peer-deps
 # Build frontend using workspace command
 RUN npm run build --workspace=apps/web
 
