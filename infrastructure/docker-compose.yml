@@ -1,0 +1,17 @@
+services:
+  itms-app:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile
+    container_name: itms-fullstack-app
+    ports:
+      - "4000:4000"
+    env_file:
+      - ../apps/api/data/.env
+    restart: always
+    volumes:
+      - itms-logs:/usr/src/app/logs
+
+volumes:
+  itms-logs:
+    driver: local

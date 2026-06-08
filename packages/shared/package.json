@@ -1,0 +1,13 @@
+{
+  "name": "@itms/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./constants": "./constants/index.js",
+    "./schemas": "./schemas/index.js",
+    "./types": "./types/index.js"
+  }
+}

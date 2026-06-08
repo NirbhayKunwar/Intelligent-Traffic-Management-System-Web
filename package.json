@@ -1,0 +1,22 @@
+{
+  "name": "itms-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "bootstrap": "npm install",
+    "build": "npm run build --workspace=capstone",
+    "start:api": "npm start --workspace=itms-backend",
+    "start:ai": "cd apps/ai && python app.py",
+    "start": "node scripts/start.js",
+    "verify": "node scripts/verify.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "dotenv": "^17.3.1"
+  }
+}

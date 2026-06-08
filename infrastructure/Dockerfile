@@ -1,0 +1,86 @@
+# ==============================================================================
+# STAGE 1: Build Frontend Assets
+# ==============================================================================
+FROM node:18-slim AS frontend-builder
+WORKDIR /usr/src/app
+
+# Copy monorepo configuration
+COPY package.json ./
+COPY apps/web/package.json ./apps/web/
+COPY packages/shared/package.json ./packages/shared/
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY packages/shared/ ./packages/shared/
+COPY apps/web/ ./apps/web/
+
+# Build React application
+WORKDIR /usr/src/app/apps/web
+RUN npm run build
+
+# ==============================================================================
+# STAGE 2: Build Backend Dependencies
+# ==============================================================================
+FROM node:18-slim AS backend-builder
+WORKDIR /usr/src/app
+
+COPY package.json ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/shared/package.json ./packages/shared/
+
+RUN npm install --omit=dev
+
+# ==============================================================================
+# STAGE 3: Final Runtime Image
+# ==============================================================================
+FROM python:3.10-slim-bookworm
+WORKDIR /usr/src/app
+
+# 1. Install Node.js, PM2, and system libraries required for OpenCV
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    gnupg \
+    build-essential \
+    libgl1 \
+    libglib2.0-0 \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g pm2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. Install Python AI/ML dependencies
+COPY apps/ai/requirements.txt ./apps/ai/
+RUN pip install --no-cache-dir -r ./apps/ai/requirements.txt
+
+# 3. Copy shared libraries & backend code
+COPY packages/shared/ ./packages/shared/
+COPY --from=backend-builder /usr/src/app/node_modules/ ./node_modules/
+COPY --from=backend-builder /usr/src/app/apps/api/node_modules/ ./apps/api/node_modules/
+COPY apps/api/ ./apps/api/
+
+# 4. Copy built React frontend static assets
+COPY --from=frontend-builder /usr/src/app/apps/web/dist/ ./apps/web/dist/
+
+# 5. Copy FastAPI Python files
+COPY apps/ai/ ./apps/ai/
+
+# 6. Copy PM2 ecosystem config
+COPY infrastructure/ecosystem.config.js ./infrastructure/ecosystem.config.js
+
+# 7. Create directory structure for logs
+RUN mkdir -p logs/api logs/ai logs/pm2
+
+# 8. Set production environment
+ENV NODE_ENV=production
+ENV PORT=4000
+ENV MODEL_SERVICE_URL=http://127.0.0.1:8001
+ENV MODEL_SERVICE_HOST=127.0.0.1
+ENV MODEL_SERVICE_PORT=8001
+
+# Expose only one public port (Express server)
+EXPOSE 4000
+
+# Start both Node & Python microservices via PM2 Process Manager
+CMD ["pm2-runtime", "start", "infrastructure/ecosystem.config.js"]

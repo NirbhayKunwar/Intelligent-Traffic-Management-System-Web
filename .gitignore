@@ -34,7 +34,6 @@ ENV/
 # Python packaging
 *.egg-info/
 *.egg
-dist/
 *.whl
 
 # ─── Secrets & Environment Variables (CRITICAL) ─────────────
@@ -43,30 +42,29 @@ dist/
 .env.*.local
 .env.development
 .env.production
-itms-backend/data/.env
+apps/api/data/.env
 
-# ─── Database (contains real user data) ─────────────────────
-# Keep a db.example.json in repo but ignore the live one
-itms-backend/data/db.json
+# ─── Database ───────────────────────────────────────────────
+apps/api/data/db.json
 
 # ─── Uploaded User Files ────────────────────────────────────
-itms-backend/uploads/
+apps/api/uploads/
 
 # ─── Large AI Model Weights ─────────────────────────────────
 # YOLOv5/YOLOv8 .pt files are 6–170MB — too large for Git
 # Download them separately via requirements or release assets
-model-service/*.pt
-model-service/*.onnx
-model-service/weights/
+apps/ai/*.pt
+apps/ai/*.onnx
+apps/ai/weights/
+apps/ai/models/**/*.pt
 
 # ─── Sample Video Datasets ──────────────────────────────────
 # Large .mp4 files should NOT be committed to Git.
-# Provide download instructions in README instead.
-datasets/**/*.mp4
-datasets/**/*.avi
-datasets/**/*.mkv
-datasets/**/*.mov
-datasets/**/*.webm
+apps/ai/models/**/*.mp4
+apps/ai/models/**/*.avi
+apps/ai/models/**/*.mkv
+apps/ai/models/**/*.mov
+apps/ai/models/**/*.webm
 
 # ─── Logs ───────────────────────────────────────────────────
 *.log
