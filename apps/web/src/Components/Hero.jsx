@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import pic1Traffic from "../assets/Pic1_traffic.jpg";
+import pic1Traffic from "../assets/pic1_traffic.jpg";
 
 // Hero component showcasing the main headline and call-to-action for the intelligent traffic management system
 const MotionDiv = motion.div;
