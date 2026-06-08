@@ -4,23 +4,21 @@
 FROM node:22-slim AS frontend-builder
 WORKDIR /usr/src/app
 
-# Copy monorepo workspace manifests only (no lockfile - lockfile was built on Windows
-# and pins Windows-specific @rolldown/binding-win32-x64-msvc native binaries which
-# cannot load on Linux. Fresh install ensures correct Linux native binaries.)
-COPY package.json ./
+# Copy monorepo workspace manifests + lockfile (Vite 5 uses Rollup which is
+# pure JavaScript - no platform-specific native binaries, so the lockfile is safe)
+COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
-# Install dependencies with fresh resolution for the correct Linux platform
-RUN npm install --legacy-peer-deps
+# Install all dependencies (ci for reproducible builds)
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY packages/shared/ ./packages/shared/
 COPY apps/web/ ./apps/web/
 
-# Build React app: run vite from the apps/web directory using the absolute binary path
-# This guarantees vite (and rolldown) are found regardless of PATH
+# Build React app from the web workspace directory using explicit vite binary path
 WORKDIR /usr/src/app/apps/web
 RUN /usr/src/app/node_modules/.bin/vite build
 
