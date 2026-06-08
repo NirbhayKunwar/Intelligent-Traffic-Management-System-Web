@@ -17,9 +17,9 @@ RUN npm install --legacy-peer-deps
 COPY packages/shared/ ./packages/shared/
 COPY apps/web/ ./apps/web/
 
-# Build React application
-WORKDIR /usr/src/app/apps/web
-RUN npm run build
+# Build React application from monorepo root so node_modules/.bin/vite is on PATH
+WORKDIR /usr/src/app
+RUN npm run build --workspace=apps/web
 
 # ==============================================================================
 # STAGE 2: Build Backend Dependencies
