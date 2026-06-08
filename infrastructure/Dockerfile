@@ -5,15 +5,18 @@ FROM node:22-slim AS frontend-builder
 WORKDIR /usr/src/app
 
 # Copy workspace manifests (no lockfile - avoids platform-specific resolution issues)
-COPY package.json ./
+# Copy monorepo manifests and lockfile
+COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
-
-# Fresh install: npm resolves correct binaries for this Linux platform
+# Install all dependencies for Linux platform
+RUN npm ci --legacy-peer-deps
+# Now copy source code needed for frontend build
 COPY packages/shared/ ./packages/shared/
 COPY apps/web/ ./apps/web/
-RUN npm install --legacy-peer-deps && npm run build --workspace=apps/web
+# Build frontend using workspace command
+RUN npm run build --workspace=apps/web
 
 # ==============================================================================
 # STAGE 2: Build Backend Dependencies
