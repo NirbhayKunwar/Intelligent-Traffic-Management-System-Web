@@ -1,7 +1,7 @@
 # ==============================================================================
 # STAGE 1: Build Frontend Assets
 # ==============================================================================
-FROM node:18-slim AS frontend-builder
+FROM node:22-slim AS frontend-builder
 WORKDIR /usr/src/app
 
 # Copy monorepo configuration and lockfile
@@ -24,7 +24,7 @@ RUN npm run build
 # ==============================================================================
 # STAGE 2: Build Backend Dependencies
 # ==============================================================================
-FROM node:18-slim AS backend-builder
+FROM node:22-slim AS backend-builder
 WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
@@ -47,7 +47,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgl1 \
     libglib2.0-0 \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g pm2 \
     && rm -rf /var/lib/apt/lists/*
