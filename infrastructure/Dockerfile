@@ -17,7 +17,7 @@ COPY apps/api/ ./apps/api/
 # Install all dependencies for Linux platform
 RUN npm ci --legacy-peer-deps
 # Build frontend using workspace command
-RUN npm run build --workspace=apps/web
+RUN npm run build --workspace=apps/web -- --debug
 
 # ==============================================================================
 # STAGE 2: Build Backend Dependencies
