@@ -18,9 +18,23 @@ export const helmetMiddleware = helmet({
   contentSecurityPolicy: {
     useDefaults: true,
     directives: {
-      "img-src": ["'self'", "data:", "https://res.cloudinary.com", "https://*.tile.openstreetmap.org", "https://*.google.com"],
+      "img-src": [
+        "'self'",
+        "data:",
+        "https://res.cloudinary.com",
+        "https://*.tile.openstreetmap.org",
+        "https://*.openstreetmap.org",
+        "https://*.cartocdn.com",
+        "https://*.google.com"
+      ],
       "media-src": ["'self'", "data:", "https://res.cloudinary.com"],
-      "connect-src": ["'self'", "https://res.cloudinary.com", "http://127.0.0.1:8001"],
+      "connect-src": [
+        "'self'",
+        "https://res.cloudinary.com",
+        "https://nominatim.openstreetmap.org",
+        "https://router.project-osrm.org",
+        "http://127.0.0.1:8001"
+      ],
     },
   },
 });

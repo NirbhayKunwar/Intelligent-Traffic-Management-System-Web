@@ -408,7 +408,7 @@ export default function Profile() {
             
             {/* 1. Account Details */}
             {activeTab === "account" && (
-              <div className="space-y-4">
+              <form onSubmit={(e) => { e.preventDefault(); handleSaveChanges(); }} className="space-y-4">
                 <h3 className="text-sm font-bold border-b border-slate-200/50 dark:border-white/5 pb-2">Personal Information</h3>
                 
                 <div className="space-y-1">
@@ -446,12 +446,12 @@ export default function Profile() {
                     </button>
                   )}
                 </div>
-              </div>
+              </form>
             )}
 
             {/* 2. Security & Credentials */}
             {activeTab === "security" && (
-              <div className="space-y-4">
+              <form onSubmit={(e) => { e.preventDefault(); handleSaveChanges(); }} className="space-y-4">
                 <h3 className="text-sm font-bold border-b border-slate-200/50 dark:border-white/5 pb-2">Credentials & Providers</h3>
 
                 {needsOldPassword && (
@@ -513,7 +513,7 @@ export default function Profile() {
                     )}
                   </div>
                 </div>
-              </div>
+              </form>
             )}
 
             {/* 3. Notifications Parameters */}

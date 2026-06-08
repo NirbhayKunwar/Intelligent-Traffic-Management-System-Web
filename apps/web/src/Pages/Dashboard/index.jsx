@@ -12,6 +12,8 @@ import AnalyticsPanel from "./components/AnalyticsPanel";
 import CameraGrid from "./components/CameraGrid";
 import UploadManager from "./components/UploadManager";
 import TrafficMap from "./components/TrafficMap";
+import CongestionDetectionPanel from "./components/CongestionDetectionPanel";
+import AccidentDetectionPanel from "./components/AccidentDetectionPanel";
 
 // Skeletons
 import { CardSkeleton, TableSkeleton, MapSkeleton, ChartSkeleton } from "../../Components/Skeleton";
@@ -47,6 +49,8 @@ export default function OperatorDashboard() {
   const [accidentCameraId, setAccidentCameraId] = useState("");
   const [congestionSourceType, setCongestionSourceType] = useState("camera");
   const [accidentSourceType, setAccidentSourceType] = useState("camera");
+  const [isRunningCongestion, setIsRunningCongestion] = useState(false);
+  const [isRunningAccident, setIsRunningAccident] = useState(false);
 
   const [cameraLabel, setCameraLabel] = useState("");
   const [streamUrl, setStreamUrl] = useState("");
@@ -98,6 +102,31 @@ export default function OperatorDashboard() {
     mapTargetType === "camera" ? selectedCameraForMap :
     mapTargetType === "upload" ? selectedUploadForMap :
     { name: "New Node Selection", id: "new_node" };
+
+  const selectedCongestionCamera = cameras.find((camera) => camera.id === congestionCameraId) ?? cameras[0] ?? null;
+  const selectedAccidentCamera = cameras.find((camera) => camera.id === accidentCameraId) ?? cameras[0] ?? null;
+  const selectedUpload = uploads.find((upload) => upload.id === selectedUploadId) || null;
+
+  const congestionPreviewUrl =
+    congestionSourceType === "camera"
+      ? toMediaUrl(selectedCongestionCamera?.previewUrl || selectedCongestionCamera?.url || "")
+      : toMediaUrl(selectedUpload?.previewUrl || "");
+  const accidentPreviewUrl =
+    accidentSourceType === "camera"
+      ? toMediaUrl(selectedAccidentCamera?.previewUrl || selectedAccidentCamera?.url || "")
+      : toMediaUrl(selectedUpload?.previewUrl || "");
+
+  const congestionTargetId = congestionSourceType === "camera" ? congestionCameraId : selectedUploadId;
+  const mappedCongestionJob = jobHistory.find(j => j.type === "congestion" && j.status === "completed" && 
+    (j.sourceId === congestionTargetId || j.fileId === congestionTargetId));
+  const activeCongestionResult = mappedCongestionJob?.result || null;
+  
+  const accidentTargetId = accidentSourceType === "camera" ? accidentCameraId : selectedUploadId;
+  const mappedAccidentJob =
+    jobHistory.find(j => j.type === "accident" && j.status === "completed" && (j.sourceId === accidentTargetId || 
+      j.fileId === accidentTargetId)) ||
+    jobHistory.find(j => j.type === "accident" && j.status === "completed");
+  const activeAccidentResult = mappedAccidentJob?.result || null;
 
   const applyCameraSelectionDefaults = (cameraList) => {
     const firstOnline = cameraList.find((camera) => camera.status === "Online");
@@ -390,6 +419,45 @@ export default function OperatorDashboard() {
     }
   };
 
+  const runModel = async (type) => {
+    const sourceType = type === "congestion" ? congestionSourceType : accidentSourceType;
+    const sourceId = type === "congestion"
+      ? (congestionSourceType === "camera" ? congestionCameraId : "")
+      : (accidentSourceType === "camera" ? accidentCameraId : "");
+    if (sourceType === "camera" && !sourceId) {
+      setOperatorMessage("Select an online camera before running a model.");
+      return;
+    }
+    if (sourceType === "upload" && !selectedUploadId) {
+      setOperatorMessage("Upload/select a video before running a model.");
+      return;
+    }
+    setOperatorMessage("");
+    if (type === "congestion") setIsRunningCongestion(true);
+    if (type === "accident") setIsRunningAccident(true);
+    try {
+      const response = await apiRequest("/api/inference/jobs", {
+        method: "POST",
+        body: {
+          type,
+          sourceType,
+          sourceId: sourceType === "camera" ? sourceId : "",
+          fileId: sourceType === "upload" ? selectedUploadId : "",
+          threshold: congestionThreshold,
+        },
+      });
+      await loadOperatorData();
+      setOperatorMessage(
+        `${type === "congestion" ? "Congestion" : "Accident"} job queued (${response?.job?.id || "pending"}).`
+      );
+    } catch (err) {
+      setOperatorMessage(err.message || "Unable to run model.");
+    } finally {
+      if (type === "congestion") setIsRunningCongestion(false);
+      if (type === "accident") setIsRunningAccident(false);
+    }
+  };
+
   // Video renderer
   const renderVideoPreview = (src, fallbackText, keyHint = "") => (
     <div className="aspect-video rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-black/40 flex items-center justify-center overflow-hidden">
@@ -543,6 +611,48 @@ export default function OperatorDashboard() {
                   uploads={uploads}
                   livePreviewUrl={livePreviewUrl}
                   renderVideoPreview={renderVideoPreview}
+                />
+              )}
+
+              {/* Congestion Detection Panel (Overview tab) */}
+              {activeTab === "overview" && (
+                <CongestionDetectionPanel
+                  isDarkMode={isDarkMode}
+                  congestionSourceType={congestionSourceType}
+                  setCongestionSourceType={setCongestionSourceType}
+                  congestionCameraId={congestionCameraId}
+                  setCongestionCameraId={setCongestionCameraId}
+                  selectedUploadId={selectedUploadId}
+                  setSelectedUploadId={setSelectedUploadId}
+                  cameras={cameras}
+                  uploads={uploads}
+                  congestionPreviewUrl={congestionPreviewUrl}
+                  renderVideoPreview={renderVideoPreview}
+                  runModel={runModel}
+                  isRunningCongestion={isRunningCongestion}
+                  mappedCongestionJob={mappedCongestionJob}
+                  activeCongestionResult={activeCongestionResult}
+                />
+              )}
+
+              {/* Accident Detection Panel (Overview tab) */}
+              {activeTab === "overview" && (
+                <AccidentDetectionPanel
+                  isDarkMode={isDarkMode}
+                  accidentSourceType={accidentSourceType}
+                  setAccidentSourceType={setAccidentSourceType}
+                  accidentCameraId={accidentCameraId}
+                  setAccidentCameraId={setAccidentCameraId}
+                  selectedUploadId={selectedUploadId}
+                  setSelectedUploadId={setSelectedUploadId}
+                  cameras={cameras}
+                  uploads={uploads}
+                  accidentPreviewUrl={accidentPreviewUrl}
+                  renderVideoPreview={renderVideoPreview}
+                  runModel={runModel}
+                  isRunningAccident={isRunningAccident}
+                  mappedAccidentJob={mappedAccidentJob}
+                  activeAccidentResult={activeAccidentResult}
                 />
               )}
 

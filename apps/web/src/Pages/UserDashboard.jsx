@@ -30,16 +30,30 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
+// Component to auto-center the map based on location or route changes
 function MapAutoCenter({ center, routePath }) {
   const map = useMap();
+
+  useEffect(() => {
+    if (map) {
+      map.invalidateSize();
+      const timer = setTimeout(() => {
+        map.invalidateSize();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [map]);
+
   useEffect(() => {
     if (!map || !center) return;
+    map.invalidateSize();
     if (routePath && routePath.length > 1) {
       map.fitBounds(routePath, { padding: [40, 40] });
       return;
     }
     map.setView(center, 13);
   }, [center, map, routePath]);
+
   return null;
 }
 

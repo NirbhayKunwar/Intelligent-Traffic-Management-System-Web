@@ -11,7 +11,18 @@ function MapAutoCenter({ center, triggerFly }) {
   const prevCoordsRef = useRef("");
 
   useEffect(() => {
+    if (map) {
+      map.invalidateSize();
+      const timer = setTimeout(() => {
+        map.invalidateSize();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [map]);
+
+  useEffect(() => {
     if (!center || !map) return;
+    map.invalidateSize();
     const coordStr = `${center[0].toFixed(5)},${center[1].toFixed(5)}`;
     if (prevCoordsRef.current === coordStr) return;
     prevCoordsRef.current = coordStr;
