@@ -11,16 +11,9 @@ COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
 # Fresh install: npm resolves correct binaries for this Linux platform
-RUN npm install --legacy-peer-deps
-
-# Copy source code
 COPY packages/shared/ ./packages/shared/
 COPY apps/web/ ./apps/web/
-
-# npm run build --workspace automatically adds node_modules/.bin to PATH
-# This is identical to what runs successfully in local dev
-
-RUN npm run build --workspace=apps/web
+RUN npm install --legacy-peer-deps && npm run build --workspace=apps/web
 
 # ==============================================================================
 # STAGE 2: Build Backend Dependencies
