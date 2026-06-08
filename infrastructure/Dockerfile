@@ -17,7 +17,7 @@ COPY apps/api/ ./apps/api/
 # Install all dependencies for Linux platform
 RUN npm ci --legacy-peer-deps
 # Build frontend using workspace command
-RUN npm run build --workspace=apps/web -- --debug 2>&1 | tee /tmp/vite-build.log && cat /tmp/vite-build.log
+RUN npm run build --workspace=apps/web -- --debug 2>&1 | tee /tmp/vite-build.log ; cat /tmp/vite-build.log || true
 
 # ==============================================================================
 # STAGE 2: Build Backend Dependencies
