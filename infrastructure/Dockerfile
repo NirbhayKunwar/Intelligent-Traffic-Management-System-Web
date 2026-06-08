@@ -57,7 +57,6 @@ RUN pip install --no-cache-dir -r ./apps/ai/requirements.txt
 # 3. Copy shared libraries & backend code
 COPY packages/shared/ ./packages/shared/
 COPY --from=backend-builder /usr/src/app/node_modules/ ./node_modules/
-COPY --from=backend-builder /usr/src/app/apps/api/node_modules/ ./apps/api/node_modules/
 COPY apps/api/ ./apps/api/
 
 # 4. Copy built React frontend static assets
