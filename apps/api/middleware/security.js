@@ -9,22 +9,10 @@ const SERVER_URL = process.env.SERVER_URL || "http://localhost:4000";
 
 const allowedOrigins = [CLIENT_ORIGIN, SERVER_URL].filter(Boolean);
 
-export const corsMiddleware = isProduction
-  ? cors({ origin: true, credentials: true })
-  : cors({
-      origin: (origin, callback) => {
-        // Allow same-origin or non-browser request (curl/server-to-server)
-        if (!origin) return callback(null, true);
-        if (
-          allowedOrigins.includes(origin) ||
-          (!isProduction && origin.startsWith("http://localhost"))
-        ) {
-          return callback(null, true);
-        }
-        return callback(new Error("Not allowed by CORS"));
-      },
-      credentials: true,
-    });
+export const corsMiddleware = cors({
+  origin: true,
+  credentials: true,
+});
 
 export const helmetMiddleware = helmet({
   contentSecurityPolicy: {
