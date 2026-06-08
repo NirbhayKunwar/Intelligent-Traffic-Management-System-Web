@@ -11,7 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@itms/shared": "*",
+    "@itms/shared": "workspace:*",
     "@tailwindcss/postcss": "^4.2.2",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
