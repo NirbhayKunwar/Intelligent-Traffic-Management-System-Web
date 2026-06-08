@@ -1,4 +1,11 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap');
+
+@theme {
+  --font-inter: 'Inter', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+}
 
 /* Enable dark mode manually */
 @custom-variant dark (&:where(.dark, .dark *));

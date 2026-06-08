@@ -4,69 +4,63 @@ import graphImage from "../assets/Graph.jpg";
 import lightsImage from "../assets/Lights.jpg";
 import profileImage from "../assets/profile.png";
 
-// Benefits component showcasing the advantages of the intelligent traffic management system
-const MotionDiv = motion.div;
-
-// List of benefits to display
 const benefits = [
-  "Reduce traffic congestion and travel times",
-  "Lower vehicle emissions and environmental impact",
-  "Improve public transportation efficiency",
-  "Enhance emergency vehicle response times",
-  "Provide data-driven insights for urban planning",
-  "Increase road safety and reduce accidents"
+  "Reduce traffic congestion and average commute times",
+  "Minimize vehicle idling to lower emission footprints",
+  "Improve municipal and public transit predictability",
+  "Optimize priority lanes for emergency vehicle dispatch",
+  "Leverage persistent flow data for smart urban planning",
+  "Increase intersection safety through dynamic incident logging"
 ];
 
-// Animation variants for the benefits list
 const listContainer = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
+    transition: { staggerChildren: 0.1 }
   }
 };
 
-// Animation variants for each benefit item
 const listItem = {
-  hidden: { opacity: 0, x: -20 },
-  show: { opacity: 1, x: 0 }
+  hidden: { opacity: 0, x: -15 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.25 } }
 };
 
-// Benefits component definition
 export default function Benefits() {
   return (
-    <section id="benefits" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 via-cyan-50 to-indigo-100 text-slate-950 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/2 left-10 w-96 h-96 bg-purple-500/10 dark:bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-cyan-500/10 dark:bg-cyan-500/10 rounded-full blur-3xl"></div>
+    <section id="benefits" className="py-24 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 text-slate-950 dark:text-slate-100 transition-colors duration-300 relative overflow-hidden">
+      {/* Dynamic backdrop decor */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/2 left-10 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-cyan-500/5 dark:bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }}></div>
       </div>
 
-      <div className="container mx-auto relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <MotionDiv 
-            className="space-y-6"
-            initial={{ opacity: 0, x: -30 }}
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="grid lg:grid-cols-12 gap-16 items-center">
+          
+          {/* Left panel: Bullet points benefits */}
+          <motion.div 
+            className="space-y-8 lg:col-span-6"
+            initial={{ opacity: 0, x: -25 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.4 }}
           >
-            <h2 className="text-4xl font-bold">
-              <span className="bg-gradient-to-r from-sky-600 to-purple-600
-               bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-                Transform Your City's
-              </span>
-              <br />
-              <span className="text-slate-950 dark:text-white">Transportation Network</span>
-            </h2>
-            <p className="text-xl text-slate-950 dark:text-gray-400">
-              Our intelligent traffic management system empowers cities to create 
-              more efficient, sustainable, and livable urban environments.
+            <div className="space-y-3">
+              <span className="text-xs font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">Impact Analysis</span>
+              <h2 className="text-3xl sm:text-4xl font-poppins font-extrabold tracking-tight">
+                Empowering Cities & <br />
+                <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-indigo-500 dark:from-cyan-400 dark:via-indigo-300 dark:to-indigo-400 bg-clip-text text-transparent">
+                  Transportation Networks
+                </span>
+              </h2>
+            </div>
+            
+            <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-inter">
+              By collecting telemetry and orchestrating signal nodes, our platform achieves verified efficiency metrics across dense corridors.
             </p>
             
-            <MotionDiv 
+            <motion.div 
               className="space-y-4"
               variants={listContainer}
               initial="hidden"
@@ -74,78 +68,61 @@ export default function Benefits() {
               viewport={{ once: true }}
             >
               {benefits.map((benefit, index) => (
-                <MotionDiv 
+                <motion.div 
                   key={index} 
                   variants={listItem}
-                  className="flex items-start gap-3 group"
+                  className="flex items-start gap-3.5 group"
                 >
-                  <MotionDiv 
-                    className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center mt-0.5 shadow-lg shadow-cyan-500/30"
-                    whileHover={{ scale: 1.2, rotate: 360 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Check className="w-4 h-4 text-white" />
-                  </MotionDiv>
-                  <span className="text-slate-950 dark:text-gray-300 group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">{benefit}</span>
-                </MotionDiv>
+                  <div className="flex-shrink-0 w-6 h-6 bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 rounded-full flex items-center justify-center mt-0.5 border border-cyan-500/25 dark:border-cyan-500/10">
+                    <Check className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-sm sm:text-base text-slate-700 dark:text-slate-300 font-medium font-inter">
+                    {benefit}
+                  </span>
+                </motion.div>
               ))}
-            </MotionDiv>
-          </MotionDiv>
+            </motion.div>
+          </motion.div>
 
-          <MotionDiv 
-            className="grid grid-cols-2 gap-4"
-            initial={{ opacity: 0, x: 30 }}
+          {/* Right panel: Grid image assets */}
+          <motion.div 
+            className="grid grid-cols-12 gap-4 lg:col-span-6"
+            initial={{ opacity: 0, x: 25 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.4 }}
           >
-            <div className="space-y-4">
-              <MotionDiv 
-                className="rounded-xl overflow-hidden shadow-lg border-2 border-cyan-500/20 shadow-cyan-500/20 aspect-[4/3]"
-                whileHover={{ scale: 1.05, borderColor: "rgba(6, 182, 212, 0.5)" }}
-                transition={{ duration: 0.3 }}
-              >
+            <div className="col-span-6 space-y-4">
+              <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm aspect-[4/3] bg-slate-900/10">
                 <img
                   src={graphImage}
                   alt="Traffic analytics graph"
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-              </MotionDiv>
-              <MotionDiv 
-                className="rounded-xl overflow-hidden shadow-lg border-2 border-purple-500/20 shadow-purple-500/20 aspect-[4/3]"
-                whileHover={{ scale: 1.05, borderColor: "rgba(168, 85, 247, 0.5)" }}
-                transition={{ duration: 0.3 }}
-              >
+              </div>
+              <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm aspect-[4/3] bg-slate-900/10">
                 <img
                   src={lightsImage}
                   alt="City traffic lights"
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-              </MotionDiv>
+              </div>
             </div>
-            <div className="space-y-4">
-              <MotionDiv 
-                className="rounded-xl overflow-hidden shadow-lg border-2 border-pink-500/20 shadow-pink-500/20 aspect-[4/3]"
-                whileHover={{ scale: 1.05, borderColor: "rgba(236, 72, 153, 0.5)" }}
-                transition={{ duration: 0.3 }}
-              >
+            <div className="col-span-6 flex flex-col justify-center">
+              <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm aspect-[3/4] bg-slate-900/10">
                 <img
                   src={profileImage}
                   alt="Traffic analytics display"
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-              </MotionDiv>
+              </div>
             </div>
-          </MotionDiv>
+          </motion.div>
         </div>
       </div>
     </section>
   );
 }
-
-
-
-

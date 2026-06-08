@@ -1,90 +1,68 @@
 import { motion } from "framer-motion";
 import { Lightbulb, Target, Users } from "lucide-react";
 
-// The GTS component is a call-to-action section that encourages users to get started with the ITMS platform.
-const MotionDiv = motion.div;
-
-// It features a visually appealing design with gradients, animations, and a clear message.
 const aboutPoints = [
   {
     icon: Target,
     title: "Our Mission",
-    description:
-      "Build safer and faster roads by using real-time data, AI, and adaptive traffic control.",
+    description: "Provide live signal telemetry and AI hazard verification to cut down incident dispatch times."
   },
   {
     icon: Lightbulb,
     title: "Our Vision",
-    description:
-      "Help cities become cleaner, less congested, and more connected for every commuter.",
+    description: "Orchestrate real-time traffic nodes to lower idling emission thresholds across modern city networks."
   },
   {
     icon: Users,
     title: "Who We Serve",
-    description:
-      "Municipal teams, traffic authorities, emergency services, and public transport networks.",
-  },
+    description: "Municipal operations centers, dispatch operators, city planners, and civic road authorities."
+  }
 ];
 
 export default function About() {
   return (
-    <section
-      id="about"
-      className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 via-cyan-50 to-indigo-100 text-slate-950 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100 relative overflow-hidden"
-    >
-      <div className="absolute inset-0">
-        <div className="absolute top-10 left-1/3 w-96 h-96 bg-cyan-500/10 dark:bg-cyan-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/3 w-96 h-96 bg-purple-500/10 dark:bg-purple-500/10 rounded-full blur-3xl"></div>
-      </div>
+    <section id="about" className="py-24 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 text-slate-950 dark:text-slate-100 transition-colors duration-300 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:6rem_6rem] opacity-20 pointer-events-none"></div>
 
-      <div className="container mx-auto relative z-10">
-        <MotionDiv
-          className="max-w-4xl mx-auto text-center mb-14"
-          initial={{ opacity: 0, y: 20 }}
+      <div className="max-w-7xl mx-auto relative z-10">
+        <motion.div
+          className="max-w-3xl mx-auto text-center mb-20"
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
         >
-          <h2 className="text-4xl font-bold mb-5">
-            <span className="bg-gradient-to-r from-sky-600 to-purple-600 bg-clip-text text-transparent">
-              About ITMS
-            </span>
+          <span className="text-xs font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">Platform Scope</span>
+          <h2 className="text-3xl sm:text-4xl font-poppins font-extrabold tracking-tight mt-2 mb-4">
+            Command Operations
           </h2>
-          <p className="text-lg text-slate-950 dark:text-gray-300 leading-relaxed">
-            ITMS (Intelligent Traffic Management System) is designed
-            to modernize urban mobility. We combine sensor data, predictive
-            analytics, and automation to optimize traffic flow, reduce delays, and
-            improve road safety at city scale.
+          <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-inter">
+            ITMS connects visual data sensors and tracking parameters to coordinate signal timing, streamline incident verification, and improve traffic safety at city scale.
           </p>
-        </MotionDiv>
+        </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {aboutPoints.map((point) => {
+        <div className="grid md:grid-cols-3 gap-8">
+          {aboutPoints.map((point, index) => {
             const Icon = point.icon;
             return (
-              <MotionDiv
+              <motion.div
                 key={point.title}
-                className="group relative overflow-hidden p-6 rounded-xl 
-                bg-gradient-to-br from-white/60 via-gray-100/20 to-white/60
-                dark:from-black/60 dark:via-gray-900/20 dark:to-black/60 
-                ring-1 ring-gray-500/20 dark:ring-purple-500/20
-                hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 backdrop-blur-xl"
-                initial={{ opacity: 0, y: 25 }}
+                className="relative overflow-hidden p-6 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200/60 dark:border-white/10 shadow-sm backdrop-blur-md transition-all duration-200"
+                initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <div className="pointer-events-none absolute -top-10 left-1/4 h-16 w-40 -rotate-12 bg-white/70 blur-xl opacity-80 dark:opacity-0"></div>
-                <div className="pointer-events-none absolute top-8 right-6 h-1 w-24 bg-white/60 blur-sm opacity-70 dark:opacity-0"></div>
-
-                <div className="relative z-10">
-                  <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 flex items-center justify-center mb-4">
-                    <Icon className="w-5 h-5 text-sky-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-slate-950 dark:text-white mb-2">{point.title}</h3>
-                  <p className="text-slate-950 dark:text-gray-400">{point.description}</p>
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-500/10 to-indigo-500/10 border border-cyan-500/20 dark:border-cyan-500/10 flex items-center justify-center mb-5">
+                  <Icon className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 </div>
-              </MotionDiv>
+                <h3 className="text-lg font-poppins font-bold text-slate-900 dark:text-white mb-2.5">
+                  {point.title}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-inter">
+                  {point.description}
+                </p>
+              </motion.div>
             );
           })}
         </div>
@@ -92,7 +70,3 @@ export default function About() {
     </section>
   );
 }
-
-
-
-

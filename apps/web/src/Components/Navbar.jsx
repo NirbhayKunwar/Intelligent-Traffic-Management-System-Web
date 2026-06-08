@@ -1,22 +1,16 @@
-
 import { useEffect, useState } from "react";
-import { CircleUser, Menu, X } from "lucide-react";
+import { CircleUser, Menu, X, Sun, Moon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "../lib/api";
 
-
-export default function Navbar({scrolled}) {
-  // State for mobile menu, authenticated user, theme, and system dark mode preference
+export default function Navbar({ scrolled }) {
   const [mobileMenuIsOpen, setMobileMenuIsOpen] = useState(false);
   const [authUser, setAuthUser] = useState(null);
   const location = useLocation();
 
-  // Theme state management with system preference fallback
   const [theme, setTheme] = useState(() => {
-    if (typeof window === "undefined") {
-      return "system";
-    }
-    // Try to read theme from localStorage, fallback to system if not available or on error
+    if (typeof window === "undefined") return "system";
     try {
       return localStorage.getItem("theme") || "system";
     } catch {
@@ -24,23 +18,14 @@ export default function Navbar({scrolled}) {
     }
   });
 
-  // State to track if the system prefers dark mode
   const [systemPrefersDark, setSystemPrefersDark] = useState(() => {
-    if (typeof window === "undefined" || !window.matchMedia) {
-      return false;
-    }
-    // Check if the system prefers dark mode  
+    if (typeof window === "undefined" || !window.matchMedia) return false;
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
 
-  // Effect to apply theme and listen for system preference changes
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    // Apply the selected theme to the document root
+    if (typeof window === "undefined") return;
     const root = document.documentElement;
-    // Function to apply the current theme based on user selection and system preference
     const applyTheme = () => {
       if (theme === "dark") {
         root.classList.add("dark");
@@ -51,33 +36,22 @@ export default function Navbar({scrolled}) {
         root.classList.toggle("dark", systemDark);
       }
     };
-    // Initial application of the theme on component mount and whenever theme or system preference changes
     applyTheme();
 
-    // Listen for changes in system color scheme preference and update state accordingly
-    if (!window.matchMedia) {
-      return;
-    }
-    // Set up a media query listener for changes in the system's color scheme preference
+    if (!window.matchMedia) return;
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-    // Listener function to update system preference state and re-apply theme if user preference is "system"
     const listener = () => {
       setSystemPrefersDark(media.matches);
       if (theme === "system") {
         applyTheme();
       }
     };
-    // Add the listener to the media query
     media.addEventListener("change", listener);
-    // Clean up the listener on component unmount
-    return () => {
-      media.removeEventListener("change", listener);
-    };
+    return () => media.removeEventListener("change", listener);
   }, [theme]);
-  // Effect to load authenticated user profile on component mount and when the route changes
+
   useEffect(() => {
     let active = true;
-    // Function to load the authenticated user's profile from the API
     async function loadProfile() {
       try {
         const data = await apiRequest("/api/auth/me");
@@ -88,7 +62,6 @@ export default function Navbar({scrolled}) {
         setAuthUser(null);
       }
     }
-    // Load the user profile when the component mounts and whenever the route changes
     loadProfile();
     return () => {
       active = false;
@@ -105,251 +78,275 @@ export default function Navbar({scrolled}) {
     window.addEventListener("profile-pic-updated", handleProfileUpdate);
     return () => window.removeEventListener("profile-pic-updated", handleProfileUpdate);
   }, []);
-  // Function to handle user logout by calling the API and clearing local authentication state
+
   const handleLogout = async () => {
     try {
       await apiRequest("/api/auth/logout", { method: "POST" });
     } catch {
-      // Ignore logout errors and still clear local auth state.
+      // Ignore
     }
-    // Clear the authenticated user state and reload the page to reset the app state
     setAuthUser(null);
     if (typeof window !== "undefined") {
       window.location.reload();
     }
   };
 
-  // Effect to save the user's theme preference to localStorage whenever it changes
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    // Try to save the theme preference to localStorage, but ignore errors (e.g., in private mode or if storage is blocked)
+    if (typeof window === "undefined") return;
     try {
       localStorage.setItem("theme", theme);
     } catch {
-      // Ignore storage errors (private mode, blocked storage, etc.)
+      // Ignore
     }
   }, [theme]);
-  // Determine if dark mode should be active based on user preference and system settings
+
   const isDarkMode = theme === "dark" || (theme === "system" && systemPrefersDark);
-    return (
+
+  const isActiveLink = (hash) => location.pathname === "/" && location.hash === hash;
+
+  return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 border-b ${
+      className={`fixed top-0 w-full z-50 transition-all duration-300 border-b font-inter ${
         scrolled
-          ? "bg-gradient-to-r from-blue-800/25 via-violet-800/25 to-indigo-900/30 dark:bg-slate-950 dark:bg-transparent backdrop-blur-md border-white/10 dark:border-white/5"
-          : "bg-gradient-to-r from-blue-800/15 via-violet-800/15 to-indigo-900/20 dark:bg-slate-950/20 dark:bg-transparent backdrop-blur-sm border-transparent"
+          ? "bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-slate-200/50 dark:border-white/5 shadow-sm"
+          : "bg-transparent border-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center space-x-1 group">
-              <div>
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="p-2 bg-gradient-to-tr from-cyan-500/15 to-indigo-500/15 rounded-xl border border-cyan-500/20 dark:border-cyan-500/10 group-hover:scale-105 transition-transform duration-200">
                 <img
                   src="/logo.svg"
                   alt="itms logo"
-                  className="w-6 h-6 sm:w-8 sm:h-8"
+                  className="w-6 h-6"
                   onError={(event) => {
                     event.currentTarget.src = "/favicon.svg";
                   }}
                 />
               </div>
-              <span className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-to-r from-sky-600 to-purple-500 bg-clip-text text-transparent">
+              <span className="text-xl font-poppins font-extrabold tracking-tight bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400 bg-clip-text text-transparent">
                 ITMS
               </span>
             </Link>
           </div>
 
           {/* Center nav links */}
-          <div className="hidden md:flex flex-1 items-center justify-center gap-6 lg:gap-8">
+          <div className="hidden md:flex flex-1 items-center justify-center gap-8">
             <Link
               to="/#features"
-              className="text-slate-950/90 hover:text-slate-950 dark:text-gray-300 dark:hover:text-white text-base lg:text-lg"
+              className={`text-sm font-semibold transition-colors ${
+                isActiveLink("#features")
+                  ? "text-cyan-600 dark:text-cyan-400"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+              }`}
             >
               Features
             </Link>
             <Link
               to="/#about"
-              className="text-slate-950/90 hover:text-slate-950 dark:text-gray-300 dark:hover:text-white text-base lg:text-lg"
+              className={`text-sm font-semibold transition-colors ${
+                isActiveLink("#about")
+                  ? "text-cyan-600 dark:text-cyan-400"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+              }`}
             >
               About
             </Link>
             <Link
               to="/#benefits"
-              className="text-slate-950/90 hover:text-slate-950 dark:text-gray-300 dark:hover:text-white text-base lg:text-lg"
+              className={`text-sm font-semibold transition-colors ${
+                isActiveLink("#benefits")
+                  ? "text-cyan-600 dark:text-cyan-400"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+              }`}
             >
               Benefits
             </Link>
             {authUser && (
               <Link
                 to="/dashboard"
-                className="text-slate-950/90 hover:text-slate-950 dark:text-gray-300 dark:hover:text-white text-base lg:text-lg"
+                className={`text-sm font-semibold transition-colors ${
+                  location.pathname === "/dashboard"
+                    ? "text-cyan-600 dark:text-cyan-400"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                }`}
               >
                 Dashboard
               </Link>
             )}
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Login and signup */}
+          <div className="flex items-center gap-4">
+            {/* Actions for Desktop */}
             <div className="hidden md:flex items-center gap-4">
-             
-              <div
+              {/* Theme Toggle Button */}
+              <button
                 onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-                className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer transition-all duration-300
-                  ${isDarkMode ? "bg-gray-700" : "bg-gray-300"}`}
-                aria-label={`Theme: ${isDarkMode ? "dark" : "light"}`}
+                className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition duration-200"
+                aria-label="Toggle theme"
               >
-                <div
-                  className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-all duration-300 flex items-center justify-center
-                    ${isDarkMode ? "translate-x-6" : "translate-x-0"}`}
-                >
-                </div>
-              </div>
-              {/* Show profile link and logout button if authenticated, otherwise show login and signup links */}
+                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+
               {authUser ? (
                 <>
                   <Link
                     to="/profile"
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-900/20 bg-white/40 text-slate-950 hover:bg-white/60 dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 backdrop-blur-sm"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 backdrop-blur-sm transition duration-200 overflow-hidden"
                     aria-label="Profile"
                   >
                     {authUser?.profilePic ? (
                       <img
                         src={authUser.profilePic}
                         alt="Profile"
-                        className="h-full w-full rounded-full object-cover"
+                        className="h-full w-full object-cover"
                       />
                     ) : (
-                      <CircleUser className="h-5 w-5" />
+                      <CircleUser className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                     )}
                   </Link>
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="bg-gradient-to-r from-blue-500/25 via-violet-500/25 to-indigo-600/30 text-white px-4 py-2 rounded-md backdrop-blur-sm border border-white/20 transition hover:from-blue-500/50 hover:via-violet-500/50 hover:to-indigo-600/55 hover:text-white dark:bg-gradient-to-r dark:from-blue-500/35 dark:via-violet-500/35 dark:to-indigo-600/40 dark:border-white/10 dark:hover:from-blue-500/60 dark:hover:via-violet-500/60 dark:hover:to-indigo-600/65"
+                    className="h-9 px-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-white/10 transition duration-200"
                   >
                     Logout
                   </button>
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="text-slate-950/90 hover:text-slate-950 dark:text-blue-400 dark:hover:text-blue-300">
+                  <Link
+                    to="/login"
+                    className="text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition duration-200"
+                  >
                     Login
                   </Link>
                   <Link
                     to="/signup"
-                    className="bg-gradient-to-r from-blue-500/25 via-violet-500/25 to-indigo-600/30 text-white px-4 py-2 rounded-md backdrop-blur-sm border border-white/20 transition hover:from-blue-500/50 hover:via-violet-500/50 hover:to-indigo-600/55 hover:text-white dark:bg-gradient-to-r dark:from-blue-500/35 dark:via-violet-500/35 dark:to-indigo-600/40 dark:border-white/10 dark:hover:from-blue-500/60 dark:hover:via-violet-500/60 dark:hover:to-indigo-600/65"
+                    className="h-9 inline-flex items-center justify-center px-4 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white text-sm font-semibold shadow-sm transition duration-200"
                   >
                     Sign Up
                   </Link>
                 </>
               )}
             </div>
-              {/* Mobile menu button */}
+
+            {/* Mobile menu button */}
             <button
               type="button"
-              className="md:hidden p-2 text-white/90 hover:text-white dark:text-gray-300 dark:hover:text-white"
+              className="md:hidden p-2 text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/5"
               onClick={() => setMobileMenuIsOpen((prev) => !prev)}
               aria-label={mobileMenuIsOpen ? "Close menu" : "Open menu"}
             >
-              {mobileMenuIsOpen ? (
-                <X className="w-5 h-5 sm:w-6 sm:h-6" />
-              ) : (
-                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
-              )}
+              {mobileMenuIsOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
       </div>
-      {/*Nav Links for mobile*/}
-      {mobileMenuIsOpen && (
-        <div className="md:hidden bg-gradient-to-r from-blue-800/60 via-violet-800/60 to-indigo-900/65 dark:bg-slate-900/95 backdrop-blur-lg border-t border-white/10 dark:border-white/5 animate-in slide-in-from-top duration-300">
-          <div className="px-4 py-4 sm:py-6 space-y-3 sm:space-y-4">
-            <Link
-              to="/#features"
-              onClick={() => setMobileMenuIsOpen(false)}
-              className="block text-slate-950/90 hover:text-slate-950 dark:text-gray-300 dark:hover:text-white text-base"
-            >
-              Features
-            </Link>
-            <Link
-              to="/#about"
-              onClick={() => setMobileMenuIsOpen(false)}
-              className="block text-slate-950/90 hover:text-slate-950 dark:text-gray-300 dark:hover:text-white text-base"
-            >
-              About
-            </Link>
-            <Link
-              to="/#benefits"
-              onClick={() => setMobileMenuIsOpen(false)}
-              className="block text-slate-950/90 hover:text-slate-950 dark:text-gray-300 dark:hover:text-white text-base"
-            >
-              Benefits
-            </Link>
-            {/* Show dashboard link if authenticated */}
-              <div
-                onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-                className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer transition-all duration-300
-                  ${isDarkMode ? "bg-gray-700" : "bg-gray-300"}`}
-                aria-label={`Theme: ${isDarkMode ? "dark" : "light"}`}
+
+      {/* Nav Links for Mobile Drawer */}
+      <AnimatePresence>
+        {mobileMenuIsOpen && (
+          <motion.div
+            className="md:hidden bg-white dark:bg-slate-950 border-t border-slate-200/50 dark:border-white/5"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+          >
+            <div className="px-4 py-6 space-y-4">
+              <Link
+                to="/#features"
+                onClick={() => setMobileMenuIsOpen(false)}
+                className="block text-base font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
               >
-                <div
-                  className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-all duration-300 flex items-center justify-center
-                    ${isDarkMode ? "translate-x-6" : "translate-x-0"}`}
-                >
-                </div>
-              </div>
-            {/* Show profile link and logout button if authenticated, otherwise show login and signup links */}
-            {authUser ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  className="block text-slate-950/90 hover:text-slate-950 dark:text-blue-400 dark:hover:text-blue-300"
-                  onClick={() => setMobileMenuIsOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/profile"
-                  className="block text-slate-950/90 hover:text-slate-950 dark:text-blue-400 dark:hover:text-blue-300"
-                  onClick={() => setMobileMenuIsOpen(false)}
-                >
-                  Profile
-                </Link>
+                Features
+              </Link>
+              <Link
+                to="/#about"
+                onClick={() => setMobileMenuIsOpen(false)}
+                className="block text-base font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+              >
+                About
+              </Link>
+              <Link
+                to="/#benefits"
+                onClick={() => setMobileMenuIsOpen(false)}
+                className="block text-base font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+              >
+                Benefits
+              </Link>
+
+              {/* Theme Toggle Mobile */}
+              <div className="flex items-center justify-between py-2 border-t border-slate-100 dark:border-white/5">
+                <span className="text-sm font-semibold text-slate-500">Theme</span>
                 <button
-                  type="button"
-                  onClick={() => {
-                    handleLogout();
-                    setMobileMenuIsOpen(false);
-                  }}
-                  className="block text-left bg-gradient-to-r from-blue-500/25 via-violet-500/25 to-indigo-600/30 text-white px-4 py-2 rounded-md backdrop-blur-sm border border-white/20 transition hover:from-blue-500/50 hover:via-violet-500/50 hover:to-indigo-600/55 hover:text-white dark:bg-gradient-to-r dark:from-blue-500/35 dark:via-violet-500/35 dark:to-indigo-600/40 dark:border-white/10 dark:hover:from-blue-500/60 dark:hover:via-violet-500/60 dark:hover:to-indigo-600/65"
+                  onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-sm font-medium"
                 >
-                  Logout
+                  {isDarkMode ? (
+                    <>
+                      <Sun size={15} /> Light
+                    </>
+                  ) : (
+                    <>
+                      <Moon size={15} /> Dark
+                    </>
+                  )}
                 </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="block text-slate-950/90 hover:text-slate-950 dark:text-blue-400 dark:hover:text-blue-300"
-                  onClick={() => setMobileMenuIsOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className="block text-white/90 hover:text-white dark:text-blue-400 dark:hover:text-blue-300"
-                  onClick={() => setMobileMenuIsOpen(false)}
-                >
-                  Sign Up
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+              </div>
+
+              {authUser ? (
+                <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-white/5">
+                  <Link
+                    to="/dashboard"
+                    className="block text-base font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                    onClick={() => setMobileMenuIsOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    to="/profile"
+                    className="block text-base font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                    onClick={() => setMobileMenuIsOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuIsOpen(false);
+                    }}
+                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-white/10 transition duration-200"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-white/5">
+                  <Link
+                    to="/login"
+                    className="h-10 inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-sm font-semibold"
+                    onClick={() => setMobileMenuIsOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="h-10 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 text-white text-sm font-semibold shadow-sm"
+                    onClick={() => setMobileMenuIsOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
-    );
+  );
 }
