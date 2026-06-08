@@ -4,23 +4,23 @@
 FROM node:22-slim AS frontend-builder
 WORKDIR /usr/src/app
 
-# Copy monorepo workspace manifests + lockfile (Vite 5 uses Rollup which is
-# pure JavaScript - no platform-specific native binaries, so the lockfile is safe)
-COPY package.json package-lock.json ./
+# Copy workspace manifests (no lockfile - avoids platform-specific resolution issues)
+COPY package.json ./
 COPY apps/web/package.json ./apps/web/
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
-# Install all dependencies (ci for reproducible builds)
-RUN npm ci --legacy-peer-deps
+# Fresh install: npm resolves correct binaries for this Linux platform
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY packages/shared/ ./packages/shared/
 COPY apps/web/ ./apps/web/
 
-# Build React app from the web workspace directory using explicit vite binary path
-WORKDIR /usr/src/app/apps/web
-RUN /usr/src/app/node_modules/.bin/vite build
+# npm run build --workspace automatically adds node_modules/.bin to PATH
+# This is identical to what runs successfully in local dev
+WORKDIR /usr/src/app
+RUN npm run build --workspace=apps/web
 
 # ==============================================================================
 # STAGE 2: Build Backend Dependencies
