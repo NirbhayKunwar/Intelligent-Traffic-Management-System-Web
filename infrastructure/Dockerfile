@@ -63,6 +63,7 @@ COPY apps/api/ ./apps/api/
 
 # 4. Copy built React frontend static assets
 COPY --from=frontend-builder /usr/src/app/apps/web/dist/ ./apps/web/dist/
+COPY monitoring/ ./monitoring/
 
 # 5. Copy FastAPI Python files
 COPY apps/ai/ ./apps/ai/
