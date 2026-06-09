@@ -21,11 +21,11 @@ import { CardSkeleton, TableSkeleton, MapSkeleton, ChartSkeleton } from "../../C
 // Tokens
 import { themes } from "../../design-system/tokens";
 
-export default function OperatorDashboard() {
+export default function OperatorDashboard({ user: initialUser }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [status, setStatus] = useState("loading"); // loading | ready | error | unauth
+  const [status, setStatus] = useState(initialUser ? "ready" : "loading"); // loading | ready | error | unauth
   const [error, setError] = useState("");
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(initialUser || null);
 
   // Operator Data States
   const [cameras, setCameras] = useState([]);
@@ -192,13 +192,18 @@ export default function OperatorDashboard() {
 
   // Session Loader
   useEffect(() => {
+    if (initialUser) {
+      setUser(initialUser);
+      setStatus("ready");
+      return;
+    }
     let mounted = true;
     async function loadSession() {
       try {
         const data = await apiRequest("/api/auth/me");
         if (!mounted) return;
         if (data.user?.role === "user") {
-          window.location.replace("/dashboard");
+          window.location.replace("/");
           return;
         }
         setUser(data.user);
@@ -217,7 +222,7 @@ export default function OperatorDashboard() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [initialUser]);
 
   useEffect(() => {
     if (status !== "ready" || !user) return;
@@ -555,8 +560,8 @@ export default function OperatorDashboard() {
           </div>
         )}
 
-        {/* 1. Mobile view tabs navigation */}
-        <div className="lg:hidden flex gap-1 p-1 bg-slate-100 dark:bg-black/35 rounded-xl border border-slate-200/50 dark:border-white/5 text-xs font-bold">
+        {/* Navigation Tabs Bar (Visible on all screens) */}
+        <div className="flex gap-1 p-1 bg-slate-100 dark:bg-black/35 rounded-xl border border-slate-200/50 dark:border-white/5 text-xs font-bold max-w-xl mx-auto w-full">
           {[
             { id: "overview", label: "Overview" },
             { id: "map", label: "Live Map" },
@@ -570,7 +575,7 @@ export default function OperatorDashboard() {
               className={`flex-1 py-2 rounded-lg text-center transition-all ${
                 activeTab === tab.id
                   ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm"
-                  : "text-slate-500 dark:text-gray-400"
+                  : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
               }`}
             >
               {tab.label}
@@ -580,25 +585,182 @@ export default function OperatorDashboard() {
 
         {/* 2. Main Desktop / Mobile Grid Coordinator */}
         <div className="space-y-6">
-          
-          {/* Active on all views or tab "overview" */}
-          {(activeTab === "overview" || activeTab === "settings") && (
-            <KPIGrid
-              isDarkMode={isDarkMode}
-              jobMetrics={jobMetrics}
-              cameras={cameras}
-              congestionTrend={congestionTrend}
-            />
+          {activeTab === "overview" && (
+            <>
+              <KPIGrid
+                isDarkMode={isDarkMode}
+                jobMetrics={jobMetrics}
+                cameras={cameras}
+                congestionTrend={congestionTrend}
+              />
+              <div className="grid gap-6 lg:grid-cols-12">
+                <div className="lg:col-span-8 space-y-6">
+                  <LivePreviewPanel
+                    isDarkMode={isDarkMode}
+                    liveSourceType={liveSourceType}
+                    setLiveSourceType={setLiveSourceType}
+                    liveCameraId={liveCameraId}
+                    setLiveCameraId={setLiveCameraId}
+                    selectedUploadId={selectedUploadId}
+                    setSelectedUploadId={setSelectedUploadId}
+                    cameras={cameras}
+                    uploads={uploads}
+                    livePreviewUrl={livePreviewUrl}
+                    renderVideoPreview={renderVideoPreview}
+                  />
+                  <CongestionDetectionPanel
+                    isDarkMode={isDarkMode}
+                    congestionSourceType={congestionSourceType}
+                    setCongestionSourceType={setCongestionSourceType}
+                    congestionCameraId={congestionCameraId}
+                    setCongestionCameraId={setCongestionCameraId}
+                    selectedUploadId={selectedUploadId}
+                    setSelectedUploadId={setSelectedUploadId}
+                    cameras={cameras}
+                    uploads={uploads}
+                    congestionPreviewUrl={congestionPreviewUrl}
+                    renderVideoPreview={renderVideoPreview}
+                    runModel={runModel}
+                    isRunningCongestion={isRunningCongestion}
+                    mappedCongestionJob={mappedCongestionJob}
+                    activeCongestionResult={activeCongestionResult}
+                  />
+                  <AccidentDetectionPanel
+                    isDarkMode={isDarkMode}
+                    accidentSourceType={accidentSourceType}
+                    setAccidentSourceType={setAccidentSourceType}
+                    accidentCameraId={accidentCameraId}
+                    setAccidentCameraId={setAccidentCameraId}
+                    selectedUploadId={selectedUploadId}
+                    setSelectedUploadId={setSelectedUploadId}
+                    cameras={cameras}
+                    uploads={uploads}
+                    accidentPreviewUrl={accidentPreviewUrl}
+                    renderVideoPreview={renderVideoPreview}
+                    runModel={runModel}
+                    isRunningAccident={isRunningAccident}
+                    mappedAccidentJob={mappedAccidentJob}
+                    activeAccidentResult={activeAccidentResult}
+                  />
+                  <TrafficMap
+                    isDarkMode={isDarkMode}
+                    cameras={cameras}
+                    uploads={uploads}
+                    mapDraftCoords={mapDraftCoords}
+                    setMapDraftCoords={setMapDraftCoords}
+                    mapTargetType={mapTargetType}
+                    setMapTargetType={setMapTargetType}
+                    selectedMapTarget={selectedMapTarget}
+                    saveCameraCoordinates={saveCameraCoordinates}
+                    deployAsCamera={deployAsCamera}
+                    isDeploying={isDeploying}
+                    operatorMessage={operatorMessage}
+                  />
+                </div>
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                  <AlertFeed
+                    isDarkMode={isDarkMode}
+                    alerts={alerts}
+                    onRefresh={loadOperatorData}
+                  />
+                  <IncidentTimeline
+                    isDarkMode={isDarkMode}
+                    alerts={alerts}
+                  />
+                </div>
+              </div>
+              <AnalyticsPanel
+                isDarkMode={isDarkMode}
+                congestionTrend={congestionTrend}
+                congestionThreshold={congestionThreshold}
+                trendHasRealData={trendHasRealData}
+                jobMetrics={jobMetrics}
+              />
+              <SystemHealth
+                isDarkMode={isDarkMode}
+                cameras={cameras}
+              />
+              <div className="space-y-6">
+                <CameraGrid
+                  isDarkMode={isDarkMode}
+                  cameras={cameras}
+                  cameraLabel={cameraLabel}
+                  setCameraLabel={setCameraLabel}
+                  streamUrl={streamUrl}
+                  setStreamUrl={setStreamUrl}
+                  createCamera={createCamera}
+                  isDeploying={isDeploying}
+                  editingCameraId={editingCameraId}
+                  setEditingCameraId={setEditingCameraId}
+                  editName={editName}
+                  setEditName={setEditName}
+                  editStream={editStream}
+                  setEditStream={setEditStream}
+                  editStatus={editStatus}
+                  setEditStatus={setEditStatus}
+                  editLat={editLat}
+                  setEditLat={setEditLat}
+                  editLng={editLng}
+                  setEditLng={setEditLng}
+                  updateCamera={updateCamera}
+                  deleteCamera={deleteCamera}
+                  mapDraftCoords={mapDraftCoords}
+                  setMapTargetType={setMapTargetType}
+                />
+                <UploadManager
+                  isDarkMode={isDarkMode}
+                  uploads={uploads}
+                  selectedUploadId={selectedUploadId}
+                  setSelectedUploadId={setSelectedUploadId}
+                  uploadFile={uploadFile}
+                  setUploadFile={setUploadFile}
+                  uploadVideo={uploadVideo}
+                  isUploadingVideo={isUploadingVideo}
+                  deleteUpload={deleteUpload}
+                  setMapTargetType={setMapTargetType}
+                />
+                {/* Threshold Adjuster Controller Card */}
+                <div className={`p-6 ${t.card}`}>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+                    <div className="space-y-1">
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400">
+                        Operations Controls
+                      </p>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                        Overlay Sensitivity Limit
+                      </h3>
+                    </div>
+                    <button type="button" onClick={clearAllJobs} className="px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-500/20 hover:bg-rose-500/10 text-xs font-bold text-rose-600">
+                      Purge Incident Records
+                    </button>
+                  </div>
+                  <div className="p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-black/25">
+                    <div className="flex items-center justify-between text-xs font-semibold mb-2">
+                      <span className="text-slate-600 dark:text-gray-300">Congestion Threshold Limit</span>
+                      <span className="text-cyan-500 font-mono text-sm">{congestionThreshold} Vehicles</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="5"
+                      max="80"
+                      value={congestionThreshold}
+                      onChange={(e) => onThresholdChange(Number(e.target.value))}
+                      className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                    />
+                    <div className="flex justify-between text-[9px] text-slate-400 font-semibold mt-1">
+                      <span>Peak Alert (5)</span>
+                      <span>Standard (40)</span>
+                      <span>Lenient (80)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
-          {/* Desktop Dual Columns Layout / Mobile Tabs Toggle */}
-          <div className="grid gap-6 lg:grid-cols-12">
-            
-            {/* Left Main (Map / Previews) */}
-            <div className="lg:col-span-8 space-y-6">
-              
-              {/* Live Preview Panel (Overview tab) */}
-              {(activeTab === "overview" || activeTab === "map") && (
+          {activeTab === "map" && (
+            <div className="grid gap-6 lg:grid-cols-12">
+              <div className="lg:col-span-8 space-y-6">
                 <LivePreviewPanel
                   isDarkMode={isDarkMode}
                   liveSourceType={liveSourceType}
@@ -612,52 +774,6 @@ export default function OperatorDashboard() {
                   livePreviewUrl={livePreviewUrl}
                   renderVideoPreview={renderVideoPreview}
                 />
-              )}
-
-              {/* Congestion Detection Panel (Overview tab) */}
-              {activeTab === "overview" && (
-                <CongestionDetectionPanel
-                  isDarkMode={isDarkMode}
-                  congestionSourceType={congestionSourceType}
-                  setCongestionSourceType={setCongestionSourceType}
-                  congestionCameraId={congestionCameraId}
-                  setCongestionCameraId={setCongestionCameraId}
-                  selectedUploadId={selectedUploadId}
-                  setSelectedUploadId={setSelectedUploadId}
-                  cameras={cameras}
-                  uploads={uploads}
-                  congestionPreviewUrl={congestionPreviewUrl}
-                  renderVideoPreview={renderVideoPreview}
-                  runModel={runModel}
-                  isRunningCongestion={isRunningCongestion}
-                  mappedCongestionJob={mappedCongestionJob}
-                  activeCongestionResult={activeCongestionResult}
-                />
-              )}
-
-              {/* Accident Detection Panel (Overview tab) */}
-              {activeTab === "overview" && (
-                <AccidentDetectionPanel
-                  isDarkMode={isDarkMode}
-                  accidentSourceType={accidentSourceType}
-                  setAccidentSourceType={setAccidentSourceType}
-                  accidentCameraId={accidentCameraId}
-                  setAccidentCameraId={setAccidentCameraId}
-                  selectedUploadId={selectedUploadId}
-                  setSelectedUploadId={setSelectedUploadId}
-                  cameras={cameras}
-                  uploads={uploads}
-                  accidentPreviewUrl={accidentPreviewUrl}
-                  renderVideoPreview={renderVideoPreview}
-                  runModel={runModel}
-                  isRunningAccident={isRunningAccident}
-                  mappedAccidentJob={mappedAccidentJob}
-                  activeAccidentResult={activeAccidentResult}
-                />
-              )}
-
-              {/* Leaflet Map (Overview, Map, or Settings tab) */}
-              {(activeTab === "overview" || activeTab === "map" || activeTab === "settings") && (
                 <TrafficMap
                   isDarkMode={isDarkMode}
                   cameras={cameras}
@@ -672,129 +788,144 @@ export default function OperatorDashboard() {
                   isDeploying={isDeploying}
                   operatorMessage={operatorMessage}
                 />
-              )}
-            </div>
-
-            {/* Right Main (Feeds / Audits) */}
-            <div className="lg:col-span-4 flex flex-col gap-6">
-              {(activeTab === "overview" || activeTab === "map") && (
+              </div>
+              <div className="lg:col-span-4">
                 <AlertFeed
                   isDarkMode={isDarkMode}
                   alerts={alerts}
                   onRefresh={loadOperatorData}
                 />
-              )}
-
-              {(activeTab === "overview" || activeTab === "analytics") && (
-                <IncidentTimeline
-                  isDarkMode={isDarkMode}
-                  alerts={alerts}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Analytics area (Desktop grid / Mobile tab) */}
-          {(activeTab === "overview" || activeTab === "analytics") && (
-            <AnalyticsPanel
-              isDarkMode={isDarkMode}
-              congestionTrend={congestionTrend}
-              congestionThreshold={congestionThreshold}
-              trendHasRealData={trendHasRealData}
-              jobMetrics={jobMetrics}
-            />
-          )}
-
-          {/* System health row (Desktop grid / Mobile tab) */}
-          {(activeTab === "overview" || activeTab === "analytics") && (
-            <SystemHealth
-              isDarkMode={isDarkMode}
-              cameras={cameras}
-            />
-          )}
-
-          {/* Camera deployment configurations & upload files cards (Desktop grid / Mobile tab) */}
-          {(activeTab === "overview" || activeTab === "settings") && (
-            <div className="space-y-6">
-              <CameraGrid
-                isDarkMode={isDarkMode}
-                cameras={cameras}
-                cameraLabel={cameraLabel}
-                setCameraLabel={setCameraLabel}
-                streamUrl={streamUrl}
-                setStreamUrl={setStreamUrl}
-                createCamera={createCamera}
-                isDeploying={isDeploying}
-                editingCameraId={editingCameraId}
-                setEditingCameraId={setEditingCameraId}
-                editName={editName}
-                setEditName={setEditName}
-                editStream={editStream}
-                setEditStream={setEditStream}
-                editStatus={editStatus}
-                setEditStatus={setEditStatus}
-                editLat={editLat}
-                setEditLat={setEditLat}
-                editLng={editLng}
-                setEditLng={setEditLng}
-                updateCamera={updateCamera}
-                deleteCamera={deleteCamera}
-                mapDraftCoords={mapDraftCoords}
-                setMapTargetType={setMapTargetType}
-              />
-
-              <UploadManager
-                isDarkMode={isDarkMode}
-                uploads={uploads}
-                selectedUploadId={selectedUploadId}
-                setSelectedUploadId={setSelectedUploadId}
-                uploadFile={uploadFile}
-                setUploadFile={setUploadFile}
-                uploadVideo={uploadVideo}
-                isUploadingVideo={isUploadingVideo}
-                deleteUpload={deleteUpload}
-                setMapTargetType={setMapTargetType}
-              />
-
-              {/* Threshold Adjuster Controller Card */}
-              <div className={`p-6 ${t.card}`}>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
-                  <div className="space-y-1">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400">
-                      Operations Controls
-                    </p>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      Overlay Sensitivity Limit
-                    </h3>
-                  </div>
-                  <button type="button" onClick={clearAllJobs} className="px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-500/20 hover:bg-rose-500/10 text-xs font-bold text-rose-600">
-                    Purge Incident Records
-                  </button>
-                </div>
-
-                <div className="p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-black/25">
-                  <div className="flex items-center justify-between text-xs font-semibold mb-2">
-                    <span className="text-slate-600 dark:text-gray-300">Congestion Threshold Limit</span>
-                    <span className="text-cyan-500 font-mono text-sm">{congestionThreshold} Vehicles</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="5"
-                    max="80"
-                    value={congestionThreshold}
-                    onChange={(e) => onThresholdChange(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                  />
-                  <div className="flex justify-between text-[9px] text-slate-400 font-semibold mt-1">
-                    <span>Peak Alert (5)</span>
-                    <span>Standard (40)</span>
-                    <span>Lenient (80)</span>
-                  </div>
-                </div>
               </div>
             </div>
           )}
 
+          {activeTab === "analytics" && (
+            <div className="grid gap-6 lg:grid-cols-12">
+              <div className="lg:col-span-8 space-y-6">
+                <AnalyticsPanel
+                  isDarkMode={isDarkMode}
+                  congestionTrend={congestionTrend}
+                  congestionThreshold={congestionThreshold}
+                  trendHasRealData={trendHasRealData}
+                  jobMetrics={jobMetrics}
+                />
+              </div>
+              <div className="lg:col-span-4 flex flex-col gap-6">
+                <IncidentTimeline
+                  isDarkMode={isDarkMode}
+                  alerts={alerts}
+                />
+                <SystemHealth
+                  isDarkMode={isDarkMode}
+                  cameras={cameras}
+                />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "settings" && (
+            <>
+              <KPIGrid
+                isDarkMode={isDarkMode}
+                jobMetrics={jobMetrics}
+                cameras={cameras}
+                congestionTrend={congestionTrend}
+              />
+              <div className="grid gap-6 lg:grid-cols-12">
+                <div className="lg:col-span-8 space-y-6">
+                  <TrafficMap
+                    isDarkMode={isDarkMode}
+                    cameras={cameras}
+                    uploads={uploads}
+                    mapDraftCoords={mapDraftCoords}
+                    setMapDraftCoords={setMapDraftCoords}
+                    mapTargetType={mapTargetType}
+                    setMapTargetType={setMapTargetType}
+                    selectedMapTarget={selectedMapTarget}
+                    saveCameraCoordinates={saveCameraCoordinates}
+                    deployAsCamera={deployAsCamera}
+                    isDeploying={isDeploying}
+                    operatorMessage={operatorMessage}
+                  />
+                  <CameraGrid
+                    isDarkMode={isDarkMode}
+                    cameras={cameras}
+                    cameraLabel={cameraLabel}
+                    setCameraLabel={setCameraLabel}
+                    streamUrl={streamUrl}
+                    setStreamUrl={setStreamUrl}
+                    createCamera={createCamera}
+                    isDeploying={isDeploying}
+                    editingCameraId={editingCameraId}
+                    setEditingCameraId={setEditingCameraId}
+                    editName={editName}
+                    setEditName={setEditName}
+                    editStream={editStream}
+                    setEditStream={setEditStream}
+                    editStatus={editStatus}
+                    setEditStatus={setEditStatus}
+                    editLat={editLat}
+                    setEditLat={setEditLat}
+                    editLng={editLng}
+                    setEditLng={setEditLng}
+                    updateCamera={updateCamera}
+                    deleteCamera={deleteCamera}
+                    mapDraftCoords={mapDraftCoords}
+                    setMapTargetType={setMapTargetType}
+                  />
+                </div>
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                  <UploadManager
+                    isDarkMode={isDarkMode}
+                    uploads={uploads}
+                    selectedUploadId={selectedUploadId}
+                    setSelectedUploadId={setSelectedUploadId}
+                    uploadFile={uploadFile}
+                    setUploadFile={setUploadFile}
+                    uploadVideo={uploadVideo}
+                    isUploadingVideo={isUploadingVideo}
+                    deleteUpload={deleteUpload}
+                    setMapTargetType={setMapTargetType}
+                  />
+                  {/* Threshold Adjuster Controller Card */}
+                  <div className={`p-6 ${t.card}`}>
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+                      <div className="space-y-1">
+                        <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400">
+                          Operations Controls
+                        </p>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                          Overlay Sensitivity Limit
+                        </h3>
+                      </div>
+                      <button type="button" onClick={clearAllJobs} className="px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-500/20 hover:bg-rose-500/10 text-xs font-bold text-rose-600">
+                        Purge Incident Records
+                      </button>
+                    </div>
+                    <div className="p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-black/25">
+                      <div className="flex items-center justify-between text-xs font-semibold mb-2">
+                        <span className="text-slate-600 dark:text-gray-300">Congestion Threshold Limit</span>
+                        <span className="text-cyan-500 font-mono text-sm">{congestionThreshold} Vehicles</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="5"
+                        max="80"
+                        value={congestionThreshold}
+                        onChange={(e) => onThresholdChange(Number(e.target.value))}
+                        className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                      />
+                      <div className="flex justify-between text-[9px] text-slate-400 font-semibold mt-1">
+                        <span>Peak Alert (5)</span>
+                        <span>Standard (40)</span>
+                        <span>Lenient (80)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

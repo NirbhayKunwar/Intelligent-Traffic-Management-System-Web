@@ -66,7 +66,7 @@ export default function Hero() {
               transition={{ duration: 0.4, delay: 0.3 }}
             >
               <Link
-                to="/signup"
+                to="/dashboard"
                 className="w-full sm:w-auto h-12 inline-flex items-center justify-center px-6 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-md hover:shadow-lg transition duration-200 gap-2"
               >
                 Access Dashboard
