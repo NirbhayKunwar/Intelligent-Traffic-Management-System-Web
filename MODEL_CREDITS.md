@@ -41,15 +41,7 @@ Below is the detailed attribution for all artificial intelligence and computer v
 
 ---
 
-## 📂 5. CCTV Incident Dataset
-- **Author/Curator**: **Surya Prabhakaran**
-- **Profile**: [Surya Prabhakaran on Kaggle](https://www.kaggle.com/suryaprabhakaran)
-- **Dataset**: [Road Accidents from CCTV Footages Dataset](https://www.kaggle.com/datasets/suryaprabhakaran/road-accidents-from-cctv-footages-dataset)
-- **Contribution**: Compiled and published the extensive dataset of over 27,000 traffic footage frames and surveillance videos used to test, tune, and demonstrate the accident detection and density classification parameters of this platform.
-
----
-
-## 🛠️ 6. Supporting Computer Vision Libraries
+## 🛠️ 5. Supporting Computer Vision Libraries
 
 ### 👁️ OpenCV (Open Source Computer Vision Library)
 - **Creators**: Intel, Willow Garage, and the OpenCV community
@@ -64,5 +56,5 @@ Below is the detailed attribution for all artificial intelligence and computer v
 
 ---
 
-## ⚖️ 7. License & Ethical Use
+## ⚖️ 6. License & Ethical Use
 Both the custom accident and traffic density models are intended for civil traffic planning and emergency response optimization. Users must adhere to local privacy and surveillance regulations when deploying these models on live public corridor streams.
