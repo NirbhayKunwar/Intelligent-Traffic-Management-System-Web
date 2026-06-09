@@ -36,6 +36,7 @@ Below is the detailed attribution for all artificial intelligence and computer v
 ## 📓 4. Kaggle Notebook Reference
 - **Author/Creator**: **Sara Zahran** (Kaggle Notebooks Master)
 - **Profile**: [Sara Zahran on Kaggle](https://www.kaggle.com/sarazahran)
+- **Notebook Link**: [Real-time Accident Detection and Traffic Analysis on Kaggle](https://www.kaggle.com/code/sarazahran1/real-time-accident-detection-and-traffic-analysis)
 - **Contribution**: Author of the original Kaggle notebook `real-time-accident-detection-and-traffic-analysis.ipynb` located in the root of this repository. This notebook established the vehicle coordinate checking loop, the OpenCV frame extraction stride, and visual validation charts that formed the basis of our FastAPI detection microservice.
 
 ---
