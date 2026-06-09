@@ -818,6 +818,7 @@ export default function OperatorDashboard({ user: initialUser }) {
                 <SystemHealth
                   isDarkMode={isDarkMode}
                   cameras={cameras}
+                  isSidebar={true}
                 />
               </div>
             </div>

@@ -3,7 +3,7 @@ import { ShieldCheck, HardDrive, Cpu, Video } from "lucide-react";
 import { StatusBadge } from "../../../Components/StatusBadge";
 import { themes } from "../../../design-system/tokens";
 
-export default function SystemHealth({ isDarkMode, cameras }) {
+export default function SystemHealth({ isDarkMode, cameras, isSidebar = false }) {
   const t = themes.getThemeClasses(isDarkMode);
 
   const activeCamerasCount = cameras?.filter((c) => c.status === "Online").length || 0;
@@ -51,20 +51,22 @@ export default function SystemHealth({ isDarkMode, cameras }) {
         </h3>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={`grid gap-4 ${isSidebar ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"}`}>
         {services.map((srv) => {
           const IconComp = srv.icon;
           return (
             <div
               key={srv.name}
-              className={`p-4 rounded-xl border ${t.border} bg-white/40 dark:bg-black/20 flex items-center justify-between transition-all duration-300 hover:scale-[1.01]`}
+              className={`p-4 rounded-xl border ${t.border} bg-white/40 dark:bg-black/20 flex ${
+                isSidebar ? "flex-col items-start gap-3" : "items-center justify-between"
+              } transition-all duration-300 hover:scale-[1.01]`}
             >
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-cyan-500/10 rounded-lg text-cyan-500 dark:text-cyan-400 border border-cyan-500/15">
+                <div className="p-2.5 bg-cyan-500/10 rounded-lg text-cyan-500 dark:text-cyan-400 border border-cyan-500/15 flex-shrink-0">
                   <IconComp size={18} />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-900 dark:text-white">
+                  <p className="text-xs font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                     {srv.name}
                   </p>
                   <p className="text-[10px] text-slate-500 dark:text-gray-400 mt-0.5">

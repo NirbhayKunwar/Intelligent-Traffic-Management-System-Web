@@ -82,12 +82,65 @@ export default function Profile() {
     return { label: "Strong", score, color: "bg-emerald-500" };
   }, [formData.newPassword]);
 
-  // Session list data (mock representation of connected devices)
-  const connectedDevices = [
-    { id: 1, type: "Chrome on Windows 11", location: "Mumbai, IN", active: true, time: "Current Session" },
-    { id: 2, type: "Safari on iPhone 15", location: "Delhi, IN", active: false, time: "18 hours ago" },
-    { id: 3, type: "Firefox on macOS Sonoma", location: "Pune, IN", active: false, time: "3 days ago" },
-  ];
+  const [deviceList, setDeviceList] = useState([]);
+
+  useEffect(() => {
+    const getDeviceDetails = () => {
+      if (typeof window === "undefined" || !navigator) {
+        return { type: "Web Session" };
+      }
+      const ua = navigator.userAgent;
+      let browser = "Web Browser";
+      let os = "Device";
+
+      if (ua.includes("Firefox")) browser = "Firefox";
+      else if (ua.includes("Chrome")) browser = "Chrome";
+      else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
+      else if (ua.includes("Edge")) browser = "Edge";
+      else if (ua.includes("Opera") || ua.includes("OPR")) browser = "Opera";
+
+      if (ua.includes("Windows NT 10.0")) os = "Windows 11";
+      else if (ua.includes("Windows NT 6.3")) os = "Windows 8.1";
+      else if (ua.includes("Windows NT 6.2")) os = "Windows 8";
+      else if (ua.includes("Windows NT 6.1")) os = "Windows 7";
+      else if (ua.includes("Macintosh") || ua.includes("Mac OS X")) os = "macOS";
+      else if (ua.includes("Linux")) os = "Linux";
+      else if (ua.includes("Android")) os = "Android";
+      else if (ua.includes("iPhone")) os = "iPhone";
+      else if (ua.includes("iPad")) os = "iPad";
+
+      return { type: `${browser} on ${os}` };
+    };
+
+    const { type } = getDeviceDetails();
+    
+    // Set initial loading state with local details
+    setDeviceList([
+      { id: 1, type, location: "Locating...", active: true, time: "Current Session" }
+    ]);
+
+    let active = true;
+    async function locateSession() {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        const data = await res.json();
+        if (!active) return;
+        const loc = data.city && data.country_code ? `${data.city}, ${data.country_code}` : "Remote Location";
+        setDeviceList([
+          { id: 1, type, location: loc, active: true, time: "Current Session" }
+        ]);
+      } catch {
+        if (!active) return;
+        setDeviceList([
+          { id: 1, type, location: "Local Network", active: true, time: "Current Session" }
+        ]);
+      }
+    }
+    locateSession();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleUpload = async (selectedFileParam) => {
     const uploadFile = selectedFileParam || file;
@@ -664,7 +717,7 @@ export default function Profile() {
                 <h3 className="text-sm font-bold border-b border-slate-200/50 dark:border-white/5 pb-2">Active Session Devices</h3>
 
                 <div className="space-y-3">
-                  {connectedDevices.map((dev) => (
+                  {deviceList.map((dev) => (
                     <div key={dev.id} className="p-3 border border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-black/25 rounded-xl flex items-center justify-between">
                       <div className="space-y-0.5">
                         <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
