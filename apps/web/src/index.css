@@ -5,6 +5,18 @@
   --font-inter: 'Inter', sans-serif;
   --font-poppins: 'Poppins', sans-serif;
   --font-mono: 'Geist Mono', monospace;
+
+  /* 60-30-10 Theme Palette Colors */
+  --color-dominant-light: #f8fafc;
+  --color-dominant-dark: #020617;
+  --color-secondary-light-card: #ffffff;
+  --color-secondary-dark-card: rgba(15, 23, 42, 0.6);
+  --color-secondary-light-border: #e2e8f0;
+  --color-secondary-dark-border: rgba(255, 255, 255, 0.1);
+  --color-secondary-light-text: #0f172a;
+  --color-secondary-dark-text: #f1f5f9;
+  --color-accent-light: #0891b2;
+  --color-accent-dark: #22d3ee;
 }
 
 /* Enable dark mode manually */
