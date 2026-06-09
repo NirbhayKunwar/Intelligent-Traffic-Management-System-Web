@@ -1,68 +1,152 @@
-# 🚦 Intelligent Traffic Management System (ITMS) - Monorepo
+# 🚦 Intelligent Traffic Management System (ITMS) - Platform Architecture Manual
 
-Welcome to the production-ready, monorepo refactored **Intelligent Traffic Management System**. This repository organizes the system into apps and shared packages, making it deployable as a single unit.
+The **Intelligent Traffic Management System (ITMS)** is a production-grade, monorepo-architected Smart City Operations Platform. It integrates high-performance computer vision pipelines, real-time vehicle telemetry, dynamic OSRM routing matrices, and automated emergency notification relays into a unified SaaS-level command center interface.
+
+The platform is designed to look and perform at the level of industry operations consoles (comparable to the Tesla Fleet Console, Uber Operations Command, and Vercel/Stripe dashboards).
 
 ---
 
-## 📌 Architecture Overview
+## 📌 Architecture Topology
 
+The application operates as a multi-tier microservice cluster packaged in a single production container managed by the PM2 process runtime.
+
+```text
+                                  ┌────────────────────────┐
+                                  │    Client / Browser    │
+                                  │ (React 19 + Tailwind4) │
+                                  └───────────┬────────────┘
+                                              │
+                                              │ REST / WebSockets / Static Assets
+                                              ▼
+                             ┌─────────────────────────────────┐
+                             │       Express API Gateway       │ (Port 4000 / apps/api)
+                             ├─────────────────────────────────┤
+                             │ • Hosts React SPA build static  │
+                             │ • Manages JWT Auth & OAuth2     │
+                             │ • Schedules inference job logs  │
+                             └──────────────┬──────────────────┘
+                                            │
+                             ┌──────────────┴──────────────┐
+                             │                             │
+                             ▼                             ▼
+             ┌──────────────────────────────┐     ┌──────────────────┐
+             │    FastAPI Model Service     │     │  MongoDB Atlas   │
+             │     (Python / Port 8001)     │     │ (Mongoose Schema)│
+             ├──────────────────────────────┤     └──────────────────┘
+             │ • YOLOv8 Vehicle Tracker     │
+             │ • Visual Accident Classifier │
+             └──────────────────────────────┘
 ```
-                   Client / Browser
-                          │
-                          ▼
-            ┌───────────────────────────┐
-            │   Express Server (Port)   │ (apps/api)
-            ├───────────────────────────┤
-            │  • Serves React SPA static│
-            │  • Handles REST API calls │
-            │  • Proxies AI calls       │
-            └─────────────┬─────────────┘
-                          │
-                 ┌────────┴────────┐
-                 ▼                 ▼
-        ┌─────────────────┐ ┌──────────────┐
-        │  Local FastAPI  │ │   MongoDB    │
-        │   (Port 8001)   │ │   (Atlas)    │
-        │    (apps/ai)    │ └──────────────┘
-        └─────────────────┘
+
+---
+
+## 📂 Project Directory Structure
+
+```txt
+Capstone/
+ ├── apps/
+ │    ├── web/                   # React 19 Client SPA (Vite + Tailwind v4)
+ │    │    ├── src/
+ │    │    │    ├── design-system/   # 60-30-10 Golden Palette variables
+ │    │    │    ├── animations/      # Centralized Framer Motion vault
+ │    │    │    ├── Pages/           # Operator & Citizen Portal pages
+ │    │    │    └── Components/      # Common UI (Skeletons, Status Badges)
+ │    ├── api/                   # Express 5.x Backend API service
+ │    │    ├── config/           # Database & Cloudinary configurations
+ │    │    ├── middleware/       # JWT Auth and Helmet Security CSP rules
+ │    │    ├── modules/          # Auth, Camera nodes, Alerts, Uploads
+ │    │    └── services/         # Nodemailer SMTP and AI service proxy
+ │    └── ai/                    # FastAPI Python AI inference microservice
+ │         ├── models/           # YOLOv8 .pt custom weights
+ │         └── app.py            # Computer Vision tracking & collision logic
+ ├── packages/
+ │    └── shared/                # Common types, validation schemas, and constants
+ ├── infrastructure/             # Docker multi-stage build & PM2 config
+ └── scripts/                    # Bootstrap, start, and verification scripts
 ```
 
 ---
 
-## 📂 Repository Structure
+## 🎨 Design System & Visual Hierarchy
 
-* `apps/web`: React SPA frontend built using Vite and Tailwind CSS.
-* `apps/api`: Express backend, now serving the built frontend statically and proxying detection queries.
-* `apps/ai`: Python FastAPI AI detection service powered by YOLOv8.
-* `packages/shared`: Shared types, constants, and validation schemas.
-* `infrastructure`: Production configuration files (`Dockerfile`, `ecosystem.config.js`).
-* `scripts`: Orchestration scripts (`build.js`, `start.js`, `verify.js`).
+The frontend is styled strictly around the **60-30-10 golden design rule** to establish a high-end SaaS theme:
+- **60% Dominant Canvas (Background)**: `#f8fafc` (slate-50) for light mode and `#020617` (slate-950) for dark mode.
+- **30% Secondary Structure (Surfaces & text)**: Cards, borders, inputs (`bg-white` / `bg-slate-900/60`), and slate text classes (`text-slate-900` / `text-slate-100`).
+- **10% Accent (Call-To-Actions)**: Interactive highlights, focus states, and button gradients utilizing cyan-to-indigo overlays (`from-cyan-500 to-indigo-500`).
+
+Grid structures are governed by responsive 12-column layouts fluidly scaling from **Mobile (320px)**, **Tablet (768px)**, **Laptop (1024px)**, **Desktop (1440px)**, up to **Ultra-wide (1920px+)** screens.
 
 ---
 
-## 🚀 Quick Start (Development)
+## ⚙️ Environment Configuration
 
-1. **Install Root & Project Dependencies**
-   ```bash
-   npm run bootstrap
-   ```
+Create a `.env` file in `apps/api/data/.env` (based on the `.env.example` template).
 
-2. **Setup Environment Variables**
-   Configure your secrets in `apps/api/data/.env` (using `.env.example` as a template).
+| Variable | Description |
+|---|---|
+| `MONGODB_URI` | MongoDB Atlas cluster connection string |
+| `JWT_SECRET` | Secret token used to sign session cookies |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary storage bucket account name |
+| `CLOUDINARY_API_KEY` | Cloudinary storage credentials key |
+| `CLOUDINARY_API_SECRET` | Cloudinary storage secret |
+| `MODEL_SERVICE_URL` | AI service connection URL (default `http://127.0.0.1:8001`) |
+| `MODEL_SERVICE_STRICT` | If `true`, fails Express endpoints if AI worker is offline |
 
-3. **Run Services Concurrently**
-   ```bash
-   npm start
-   ```
+---
+
+## 🚀 Getting Started (Local Development)
+
+### 1. Bootstrap Monorepo
+Install root package dependencies and link shared monorepo modules:
+```bash
+npm run bootstrap
+```
+
+### 2. Verify File Layout
+Run system path and environment parameter checks:
+```bash
+npm run verify
+```
+
+### 3. Start Services
+Launch frontend, API backend, and Python FastAPI server concurrently in development mode:
+```bash
+npm start
+```
+- Client portal is served on `http://localhost:5173`.
+- API Server is served on `http://localhost:4000`.
+- AI Model Service is served on `http://localhost:8001`.
+
+---
+
+## 🤖 AI Inference Pipelines
+
+The system is equipped with custom model checkpoints stored in `apps/ai/models/`:
+
+### 🚨 Accident Classification & Collision Physics
+- **Weights**: `Accident model/best.pt` (YOLOv8 custom-trained).
+- **Process**: Identifies collision boxes in surveillance frames. Concurrently, our tracker maps vehicle centroids to evaluate physical trajectories. If centroids collide and rapid speed reductions occur, an emergency state is verified.
+- **Protocol**: Positive detections automatically query the database for Google-linked "Verified Citizens" in that coordinate radius and dispatch Nodemailer parallel email alerts.
+
+### 🚥 Congestion density Profiling
+- **Weights**: `Congestion model/traffic-model.pt` (YOLOv8 custom-trained).
+- **Process**: Performs vehicle type counts. Evaluates instant velocities and computes the stopped vehicle ratio. A weighted index blending density and flow rate determines the alert index (Critical, Moderate, Low, Clear).
+- **Protocol**: Triggers automatic signal scheduling updates and adjusts routes dynamically on citizen dashboards.
+
+Detailed attribution to model developers and datasets is maintained in [MODEL_CREDITS.md](MODEL_CREDITS.md).
 
 ---
 
 ## 🐳 Production Deployment
 
-To run the unified production build via Docker:
+To package the entire monorepo into a single self-contained production unit, run the multi-stage Docker build:
 
 ```bash
-docker build -t itms-app -f infrastructure/Dockerfile .
-docker run -p 4000:4000 --env-file apps/api/data/.env itms-app
+# Build the unified image
+docker build -t itms-platform -f infrastructure/Dockerfile .
+
+# Run container (port 4000 hosts both static React files and API routing)
+docker run -d -p 4000:4000 --env-file apps/api/data/.env --name itms-container itms-platform
 ```
-This launches a single optimized container running Node and FastAPI managed by PM2, exposing only port 4000.
+
+The runtime image is built on top of `python:3.10-slim-bookworm`, overlaying Node.js 22, OpenCV libraries, and PM2 process management to run both Express and FastAPI processes securely with auto-restart and log-merging.
