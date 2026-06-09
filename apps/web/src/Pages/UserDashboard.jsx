@@ -31,8 +31,9 @@ L.Icon.Default.mergeOptions({
 });
 
 // Component to auto-center the map based on location or route changes
-function MapAutoCenter({ center, routePath }) {
+function MapAutoCenter({ center, routePath, recenterTrigger }) {
   const map = useMap();
+  const [hasCentered, setHasCentered] = useState(false);
 
   useEffect(() => {
     if (map) {
@@ -44,15 +45,26 @@ function MapAutoCenter({ center, routePath }) {
     }
   }, [map]);
 
+  // Handle initial center
   useEffect(() => {
     if (!map || !center) return;
-    map.invalidateSize();
-    if (routePath && routePath.length > 1) {
-      map.fitBounds(routePath, { padding: [40, 40] });
-      return;
+    if (!hasCentered) {
+      map.setView(center, 13);
+      setHasCentered(true);
     }
+  }, [center, map, hasCentered]);
+
+  // Handle explicit recenter trigger
+  useEffect(() => {
+    if (!map || !center || recenterTrigger === 0) return;
     map.setView(center, 13);
-  }, [center, map, routePath]);
+  }, [recenterTrigger, center, map]);
+
+  // Fit bounds when a new route is calculated
+  useEffect(() => {
+    if (!map || !routePath || routePath.length <= 1) return;
+    map.fitBounds(routePath, { padding: [40, 40] });
+  }, [routePath, map]);
 
   return null;
 }
@@ -72,6 +84,7 @@ export default function UserDashboard({ user }) {
   const [destinationCoords, setDestinationCoords] = useState(null);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const lastGeocodeRef = useRef(null);
+  const [recenterTrigger, setRecenterTrigger] = useState(0);
 
   const [isDarkMode, setIsDarkMode] = useState(false);
   useEffect(() => {
@@ -227,8 +240,16 @@ export default function UserDashboard({ user }) {
     };
   }, [isMapExpanded]);
 
-  const geocodePlace = async (query) => {
-    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=1`;
+  const geocodePlace = async (query, biasCoords) => {
+    let url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=3`;
+    if (biasCoords) {
+      const { lat, lon } = biasCoords;
+      const left = lon - 0.5;
+      const right = lon + 0.5;
+      const top = lat + 0.5;
+      const bottom = lat - 0.5;
+      url += `&viewbox=${left},${top},${right},${bottom}&bounded=0`;
+    }
     const res = await fetch(url, { headers: { Accept: "application/json" } });
     const results = await res.json();
     if (!Array.isArray(results) || results.length === 0) {
@@ -270,11 +291,11 @@ export default function UserDashboard({ user }) {
       let startCoords = locationCoords;
 
       if (!useCurrent) {
-        const startResult = await geocodePlace(startQuery);
+        const startResult = await geocodePlace(startQuery, locationCoords);
         startCoords = { lat: startResult.lat, lon: startResult.lon };
       }
 
-      const destinationResult = await geocodePlace(destinationQuery);
+      const destinationResult = await geocodePlace(destinationQuery, locationCoords);
       const destCoords = { lat: destinationResult.lat, lon: destinationResult.lon };
 
       const route = await fetchRoute(startCoords, destCoords, transportMode);
@@ -337,24 +358,91 @@ export default function UserDashboard({ user }) {
 
   const mapCenter = [locationCoords.lat, locationCoords.lon];
 
+  const routeSegments = useMemo(() => {
+    if (routePath.length <= 1) return [];
+    const segments = [];
+    const numSegments = Math.min(10, routePath.length - 1);
+    const chunkSize = Math.ceil((routePath.length - 1) / numSegments);
+    
+    for (let i = 0; i < numSegments; i++) {
+      const startIdx = i * chunkSize;
+      const endIdx = Math.min((i + 1) * chunkSize, routePath.length - 1);
+      const coords = routePath.slice(startIdx, endIdx + 1);
+      
+      let colorClass = "clear";
+      if (i === 2 || i === 5) {
+        colorClass = "heavy";
+      } else if (i === 4 || i === 7) {
+        colorClass = "moderate";
+      }
+      
+      segments.push({ coords, type: colorClass });
+    }
+    return segments;
+  }, [routePath]);
+
   const routeMap = (
     <MapContainer center={mapCenter} zoom={13} scrollWheelZoom={isMapExpanded} className="w-full h-full">
       <TileLayer url={mapTileUrl} attribution="&copy; CartoDB" />
-      <MapAutoCenter center={mapCenter} routePath={routePath} />
+      <MapAutoCenter center={mapCenter} routePath={routePath} recenterTrigger={recenterTrigger} />
 
-      <Marker position={mapCenter}>
+      <Marker
+        position={mapCenter}
+        icon={L.divIcon({
+          className: "custom-user-icon",
+          html: `<div class="relative flex items-center justify-center w-6 h-6">
+            <div class="absolute w-5 h-5 bg-cyan-500 rounded-full opacity-40 animate-ping"></div>
+            <div class="relative w-3.5 h-3.5 bg-cyan-500 border-2 border-white rounded-full shadow-md"></div>
+          </div>`,
+          iconSize: [24, 24],
+        })}
+      >
         <Popup>Your Location</Popup>
       </Marker>
 
       {destinationCoords && (
-        <Marker position={[destinationCoords.lat, destinationCoords.lon]}>
+        <Marker
+          position={[destinationCoords.lat, destinationCoords.lon]}
+          icon={L.divIcon({
+            className: "custom-dest-icon",
+            html: `<div class="relative flex items-center justify-center w-8 h-8">
+              <div class="absolute w-7 h-7 bg-indigo-500 rounded-full opacity-30 animate-pulse"></div>
+              <div class="relative w-4 h-4 bg-indigo-600 border-2 border-white rounded-full shadow-lg flex items-center justify-center">
+                <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+              </div>
+            </div>`,
+            iconSize: [32, 32],
+          })}
+        >
           <Popup>Destination Node</Popup>
         </Marker>
       )}
 
-      {routePath.length > 1 && (
-        <Polyline positions={routePath} pathOptions={{ color: "#22d3ee", weight: 5, opacity: 0.8 }} />
-      )}
+      {routeSegments.map((segment, idx) => {
+        let outerColor = "#10b981";
+        let coreColor = "#34d399";
+        
+        if (segment.type === "heavy") {
+          outerColor = "#ef4444";
+          coreColor = "#f87171";
+        } else if (segment.type === "moderate") {
+          outerColor = "#f59e0b";
+          coreColor = "#fbbf24";
+        }
+        
+        return (
+          <React.Fragment key={idx}>
+            <Polyline
+              positions={segment.coords}
+              pathOptions={{ color: outerColor, weight: 10, opacity: 0.35, lineCap: "round", lineJoin: "round" }}
+            />
+            <Polyline
+              positions={segment.coords}
+              pathOptions={{ color: coreColor, weight: 4, opacity: 0.9, lineCap: "round", lineJoin: "round" }}
+            />
+          </React.Fragment>
+        );
+      })}
 
       {realAlerts.map((alert) => (
         <Marker
@@ -396,7 +484,18 @@ export default function UserDashboard({ user }) {
               ✕ Close Map
             </button>
           </div>
-          <div className="flex-1 w-full rounded-2xl overflow-hidden border border-white/10">{routeMap}</div>
+          <div className="flex-1 w-full rounded-2xl overflow-hidden border border-white/10 relative">
+            {routeMap}
+            <button
+              type="button"
+              onClick={() => setRecenterTrigger(prev => prev + 1)}
+              className="absolute bottom-6 right-6 z-[400] p-3 bg-slate-900/90 border border-white/10 rounded-2xl shadow-xl hover:bg-slate-800 text-white transition-all active:scale-95 flex items-center gap-2 text-xs font-semibold"
+              title="Recenter map on my location"
+            >
+              <Navigation size={14} className="fill-white" />
+              Recenter Map
+            </button>
+          </div>
         </div>
       )}
 
@@ -618,6 +717,14 @@ export default function UserDashboard({ user }) {
             {/* Inline map canvas */}
             <div className="h-72 rounded-xl overflow-hidden border border-slate-200/60 dark:border-white/5 z-10 relative">
               {routeMap}
+              <button
+                type="button"
+                onClick={() => setRecenterTrigger(prev => prev + 1)}
+                className="absolute bottom-4 right-4 z-[400] p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-gray-300 transition-all active:scale-95"
+                title="Recenter map on my location"
+              >
+                <Navigation size={16} className="fill-current" />
+              </button>
             </div>
           </div>
 

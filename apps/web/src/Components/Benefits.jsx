@@ -2,7 +2,6 @@ import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import graphImage from "../assets/Graph.jpg";
 import lightsImage from "../assets/Lights.jpg";
-import profileImage from "../assets/profile.png";
 
 const benefits = [
   "Reduce traffic congestion and average commute times",
@@ -86,39 +85,27 @@ export default function Benefits() {
 
           {/* Right panel: Grid image assets */}
           <motion.div 
-            className="grid grid-cols-12 gap-4 lg:col-span-6"
+            className="grid grid-cols-2 gap-4 lg:col-span-6"
             initial={{ opacity: 0, x: 25 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
           >
-            <div className="col-span-6 space-y-4">
-              <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm aspect-[4/3] bg-slate-900/10">
-                <img
-                  src={graphImage}
-                  alt="Traffic analytics graph"
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-              <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm aspect-[4/3] bg-slate-900/10">
-                <img
-                  src={lightsImage}
-                  alt="City traffic lights"
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
+            <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm aspect-[4/3] bg-slate-900/10">
+              <img
+                src={graphImage}
+                alt="Traffic analytics graph"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
-            <div className="col-span-6 flex flex-col justify-center">
-              <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm aspect-[3/4] bg-slate-900/10">
-                <img
-                  src={profileImage}
-                  alt="Traffic analytics display"
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
+            <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm aspect-[4/3] bg-slate-900/10">
+              <img
+                src={lightsImage}
+                alt="City traffic lights"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
           </motion.div>
         </div>
