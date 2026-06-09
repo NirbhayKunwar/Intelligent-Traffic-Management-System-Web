@@ -43,8 +43,8 @@ Below is the detailed attribution for all artificial intelligence and computer v
 
 ## 📂 5. CCTV Incident Dataset
 - **Author/Curator**: **Surya Prabhakaran**
-- **Profile**: [Surya Prabhakaran on Kaggle](https://www.kaggle.com/suryaprabhakar)
-- **Dataset**: [Road Accidents from CCTV Footages Dataset](https://www.kaggle.com/datasets/suryaprabhakar/road-accidents-from-cctv-footages-dataset)
+- **Profile**: [Surya Prabhakaran on Kaggle](https://www.kaggle.com/suryaprabhakaran)
+- **Dataset**: [Road Accidents from CCTV Footages Dataset](https://www.kaggle.com/datasets/suryaprabhakaran/road-accidents-from-cctv-footages-dataset)
 - **Contribution**: Compiled and published the extensive dataset of over 27,000 traffic footage frames and surveillance videos used to test, tune, and demonstrate the accident detection and density classification parameters of this platform.
 
 ---
