@@ -1,7 +1,7 @@
 const MODEL_SERVICE_URL = process.env.MODEL_SERVICE_URL || "http://127.0.0.1:8001";
 const MODEL_SERVICE_TIMEOUT_MS = Number(process.env.MODEL_SERVICE_TIMEOUT_MS || 15000);
 
-export async function callModelService({ type, sourceType, source, threshold }, maxRetries = 2) {
+export async function callModelService({ type, sourceType, source, threshold }, maxRetries = 0) {
   let attempt = 0;
 
   while (attempt <= maxRetries) {
@@ -40,10 +40,8 @@ export async function callModelService({ type, sourceType, source, threshold }, 
       attempt++;
       console.warn(`⚠️ AI Service attempt ${attempt} failed: ${err.message}`);
       if (attempt > maxRetries) {
-        throw new Error(`AI Model Service request failed after ${maxRetries + 1} attempts: ${err.message}`);
+        throw new Error(`AI Model Service unavailable: ${err.message}`);
       }
-      // Wait before retrying (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, attempt * 1000));
     } finally {
       clearTimeout(timeout);
     }

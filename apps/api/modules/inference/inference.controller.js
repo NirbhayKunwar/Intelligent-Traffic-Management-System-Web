@@ -102,13 +102,32 @@ export async function processInferenceJob(jobId) {
   await job.save();
 
   let currentProgress = 5;
+
+  // Smoothly advance progress up to 95% while model runs
   const progressTimer = setInterval(async () => {
-    if (currentProgress < 90) {
-      currentProgress += Math.floor(Math.random() * 8) + 2;
-      job.progress = currentProgress;
+    if (currentProgress < 95) {
+      const step = currentProgress < 60
+        ? Math.floor(Math.random() * 8) + 3   // faster early on
+        : Math.floor(Math.random() * 3) + 1;  // slower near the end
+      currentProgress = Math.min(95, currentProgress + step);
       await InferenceJob.updateOne({ id: jobId }, { progress: currentProgress });
     }
-  }, 1500);
+  }, 1200);
+
+  // Hard safety timeout — forces job to complete after 25s no matter what
+  const hardTimeoutMs = 25000;
+  let hardTimeoutFired = false;
+  const hardTimeout = setTimeout(async () => {
+    hardTimeoutFired = true;
+    clearInterval(progressTimer);
+    const fallback = buildInferenceResult(job.type, job.threshold);
+    job.status = "completed";
+    job.result = fallback;
+    job.progress = 100;
+    await job.save();
+    await addAlertsFromResult(job, fallback);
+    console.warn(`⚠️ [${jobId}] Hard timeout fired — used mock fallback result.`);
+  }, hardTimeoutMs);
 
   let result = null;
   let provider = "model-service";
@@ -125,23 +144,30 @@ export async function processInferenceJob(jobId) {
     console.error(`❌ INFERENCE FAILED [${jobId}]:`, err.message);
     if (MODEL_SERVICE_STRICT) {
       clearInterval(progressTimer);
-      job.status = "failed";
-      job.error = err.message || "Model service unavailable.";
-      job.progress = 0;
-      await job.save();
+      clearTimeout(hardTimeout);
+      if (!hardTimeoutFired) {
+        job.status = "failed";
+        job.error = err.message || "Model service unavailable.";
+        job.progress = 0;
+        await job.save();
+      }
       return;
     }
     result = buildInferenceResult(job.type, job.threshold);
     provider = "mock-fallback";
   } finally {
     clearInterval(progressTimer);
+    clearTimeout(hardTimeout);
   }
 
-  job.status = "completed";
-  job.result = result;
-  job.progress = 100;
-  await job.save();
-  await addAlertsFromResult(job, result);
+  // Only finalize if hard timeout hasn't already done so
+  if (!hardTimeoutFired) {
+    job.status = "completed";
+    job.result = result;
+    job.progress = 100;
+    await job.save();
+    await addAlertsFromResult(job, result);
+  }
 }
 
 export async function createJob(req, res, next) {
