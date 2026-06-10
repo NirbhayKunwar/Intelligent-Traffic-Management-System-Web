@@ -13,11 +13,14 @@ export default function Navbar({ scrolled }) {
 
   useEffect(() => {
     if (mobileMenuIsOpen) {
+      document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
     } else {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     }
     return () => {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     };
   }, [mobileMenuIsOpen]);
@@ -159,7 +162,7 @@ export default function Navbar({ scrolled }) {
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 border-b font-inter ${
+      className={`fixed top-0 w-full z-[9999] transition-all duration-300 border-b font-inter ${
         scrolled
           ? "bg-theme-card/85 backdrop-blur-md border-theme-border shadow-sm"
           : "bg-transparent border-transparent"
