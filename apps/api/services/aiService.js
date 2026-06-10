@@ -1,5 +1,5 @@
 const MODEL_SERVICE_URL = process.env.MODEL_SERVICE_URL || "http://127.0.0.1:8001";
-const MODEL_SERVICE_TIMEOUT_MS = Number(process.env.MODEL_SERVICE_TIMEOUT_MS || 90000);
+const MODEL_SERVICE_TIMEOUT_MS = Number(process.env.MODEL_SERVICE_TIMEOUT_MS || 15000);
 
 export async function callModelService({ type, sourceType, source, threshold }, maxRetries = 2) {
   let attempt = 0;

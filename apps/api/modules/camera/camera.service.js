@@ -16,7 +16,7 @@ export function mapCameraResponse(camera) {
   const rawUrl = String(camera.streamUrl || "");
   const isLocalFile = /^[a-zA-Z]:\\|^\//.test(rawUrl);
   const previewUrl = isLocalFile
-    ? `/api/media/camera/${camera.id}`
+    ? `/api/cameras/media/${camera.id}`
     : /^https?:\/\//i.test(rawUrl) || /^data:/i.test(rawUrl)
       ? rawUrl
       : "";

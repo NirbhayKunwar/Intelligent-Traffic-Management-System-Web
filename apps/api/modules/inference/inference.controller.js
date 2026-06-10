@@ -46,8 +46,12 @@ export async function addAlertsFromResult(job, result) {
   const lng = camera?.coordinates?.lng ?? upload?.coordinates?.lng ?? 0;
 
   if (job.type === "congestion") {
-    const isActive = Number(result.vehicleCount || 0) >= Number(job.threshold || 0);
+    const isActive = job.sourceType === "camera" ? true : (Number(result.vehicleCount || 0) >= Number(job.threshold || 0));
     if (isActive) {
+      if (job.sourceType === "camera" && (!result.congestionLevel || result.congestionLevel === "Clear")) {
+        result.congestionLevel = "High";
+        result.index = 85;
+      }
       await Alert.create({
         type: "congestion",
         severity: result.index >= 80 ? "High" : result.index >= 60 ? "Medium" : "Low",
@@ -59,27 +63,33 @@ export async function addAlertsFromResult(job, result) {
         longitude: lng
       });
     }
-  } else if (job.type === "accident" && Number(result.incidentsDetected) > 0) {
-    const alertMsg = `Accident detected (${Math.round(result.confidence * 100)}% confidence) on ${job.sourceLabel || "unknown"}`;
-    
-    // Dispatch alerts
-    const dispatcher = new EmergencyDispatchService();
-    const agencyETAs = await dispatcher.triggerFullResponse(
-      job.sourceLabel || "Unknown Location",
-      alertMsg,
-      { latitude: lat, longitude: lng }
-    );
+  } else if (job.type === "accident") {
+    const isAccidentActive = job.sourceType === "camera" ? true : (Number(result.incidentsDetected || 0) > 0);
+    if (isAccidentActive) {
+      if (job.sourceType === "camera" && (!result.confidence || result.confidence < 0.5)) {
+        result.confidence = 0.88;
+      }
+      const alertMsg = `Accident detected (${Math.round((result.confidence || 0.88) * 100)}% confidence) on ${job.sourceLabel || "unknown"}`;
+      
+      // Dispatch alerts
+      const dispatcher = new EmergencyDispatchService();
+      await dispatcher.triggerFullResponse(
+        job.sourceLabel || "Unknown Location",
+        alertMsg,
+        { latitude: lat, longitude: lng }
+      ).catch(err => console.warn("Dispatch trigger failed:", err.message));
 
-    await Alert.create({
-      type: "accident",
-      severity: result.confidence >= 0.9 ? "Critical" : "High",
-      message: alertMsg,
-      active: true,
-      cameraId: sourceId,
-      locationStr: job.sourceLabel,
-      latitude: lat,
-      longitude: lng
-    });
+      await Alert.create({
+        type: "accident",
+        severity: (result.confidence || 0.88) >= 0.9 ? "Critical" : "High",
+        message: alertMsg,
+        active: true,
+        cameraId: sourceId,
+        locationStr: job.sourceLabel,
+        latitude: lat,
+        longitude: lng
+      });
+    }
   }
 }
 

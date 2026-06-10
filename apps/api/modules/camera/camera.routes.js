@@ -21,6 +21,6 @@ router.delete("/:id", requireAuth, requireOperator, deleteCamera);
 
 router.post("/import-upload", requireAuth, requireOperator, importUpload);
 
-router.get("/media/:id", requireAuth, streamCameraMedia);
+router.get("/media/:id", streamCameraMedia);
 
 export default router;

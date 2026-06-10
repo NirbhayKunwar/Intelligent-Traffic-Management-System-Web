@@ -128,7 +128,7 @@ export default function Navbar({ scrolled }) {
     }
     setAuthUser(null);
     if (typeof window !== "undefined") {
-      window.location.reload();
+      window.location.replace("/login");
     }
   };
 
