@@ -15,7 +15,7 @@ import {
 import { validateSignupBody, validateLoginBody } from "./auth.validation.js";
 import { requireAuth } from "../../middleware/auth.js";
 import { getToken } from "../../middleware/auth.js";
-import { decodeOauthState, getClientOrigin, normalizeClientOrigin } from "./auth.service.js";
+import { decodeOauthState, getClientOrigin, normalizeClientOrigin, appendVercelBypassToken } from "./auth.service.js";
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
@@ -69,7 +69,7 @@ router.get("/google/callback", (req, res, next) => {
     const stateMeta = decodeOauthState(req.query?.state);
     const clientOrigin = stateMeta?.clientOrigin || getClientOrigin(req);
     if (err || !user) {
-      return res.redirect(`${clientOrigin}/login?oauth=failed`);
+      return res.redirect(appendVercelBypassToken(`${clientOrigin}/login?oauth=failed`));
     }
     req.user = user;
     return handleGoogleCallback(req, res, next);

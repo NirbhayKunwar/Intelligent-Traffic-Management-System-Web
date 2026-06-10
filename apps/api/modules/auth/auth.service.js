@@ -195,3 +195,20 @@ export async function upsertGoogleUser({ email, fullName, profilePic, role, orga
   });
   return user;
 }
+
+export function appendVercelBypassToken(urlStr) {
+  const secret = process.env.VERCEL_BYPASS_TOKEN || process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  if (!secret) return urlStr;
+  try {
+    const url = new URL(urlStr);
+    url.searchParams.set("x-vercel-protection-bypass", secret);
+    return url.toString();
+  } catch {
+    if (urlStr && urlStr.startsWith("/")) {
+      const separator = urlStr.includes("?") ? "&" : "?";
+      return `${urlStr}${separator}x-vercel-protection-bypass=${secret}`;
+    }
+    return urlStr;
+  }
+}
+

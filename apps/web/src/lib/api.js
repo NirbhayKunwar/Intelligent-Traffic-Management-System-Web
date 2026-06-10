@@ -37,9 +37,12 @@ export function buildGoogleAuthUrl(params) {
 // Utility function to make API requests with consistent error handling
 export async function apiRequest(path, options = {}) {
   const isFormData = options.body instanceof FormData;
+  const bypassToken = import.meta.env.VITE_VERCEL_BYPASS_TOKEN || import.meta.env.VITE_VERCEL_AUTOMATION_BYPASS_SECRET || "";
+  
   const headers = {
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers || {}),
+    ...(bypassToken ? { "x-vercel-protection-bypass": bypassToken } : {}),
   };
   // Include credentials for cookie-based authentication
   const config = {
@@ -57,12 +60,25 @@ export async function apiRequest(path, options = {}) {
   }
   // Make the API request
   const response = await fetch(apiUrl(path), config);
-  const data = await response.json().catch(() => ({}));
+  
+  // Validate that the response is JSON
+  const contentType = response.headers.get("content-type") || "";
+  const isJson = contentType.includes("application/json");
+
+  let data = {};
+  if (isJson) {
+    data = await response.json().catch(() => ({}));
+  } else if (response.status !== 204) {
+    throw new Error(
+      "Invalid response from server. The request might have been blocked or redirected (e.g., by Vercel Deployment Protection). Please check your backend connection."
+    );
+  }
+
   // If the response is not OK, throw an error with the message from the response or a default message
   if (!response.ok) {
     const message = data?.message || `Request failed (${response.status})`;
     throw new Error(message);
   }
-// Return the parsed JSON data from the response
+  // Return the parsed JSON data from the response
   return data;
 }

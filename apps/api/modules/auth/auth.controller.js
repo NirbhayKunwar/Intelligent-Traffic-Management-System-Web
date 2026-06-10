@@ -11,7 +11,8 @@ import {
   decodeOauthState, 
   linkGoogleProvider, 
   upsertGoogleUser,
-  ensureAuthMetadata
+  ensureAuthMetadata,
+  appendVercelBypassToken
 } from "./auth.service.js";
 import { sendPasswordResetEmail, sendPasswordResetOtpEmail } from "../../services/emailService.js";
 import { getToken } from "../../middleware/auth.js";
@@ -216,7 +217,7 @@ export async function handleGoogleCallback(req, res) {
     const clientOrigin = stateMeta?.clientOrigin || getClientOrigin(req);
     const { email, fullName, profilePic, oauthId } = getGoogleProfile(req.user);
     if (!email) {
-      return res.redirect(`${clientOrigin}/login?oauth=missing_email`);
+      return res.redirect(appendVercelBypassToken(`${clientOrigin}/login?oauth=missing_email`));
     }
 
     let oauthMeta = stateMeta || req.session?.oauth || {};
@@ -238,7 +239,7 @@ export async function handleGoogleCallback(req, res) {
     } else {
       const existing = await User.findOne({ email });
       if (!existing && mode !== "signup") {
-        return res.redirect(`${clientOrigin}/signup?oauth=signup_required`);
+        return res.redirect(appendVercelBypassToken(`${clientOrigin}/signup?oauth=signup_required`));
       }
 
       user = await upsertGoogleUser({
@@ -257,19 +258,19 @@ export async function handleGoogleCallback(req, res) {
     setAuthCookie(res, newToken);
 
     if (mode === "link" || token) {
-      return res.redirect(`${clientOrigin}/profile?oauth=linked`);
+      return res.redirect(appendVercelBypassToken(`${clientOrigin}/profile?oauth=linked`));
     }
 
-    return res.redirect(clientOrigin);
+    return res.redirect(appendVercelBypassToken(clientOrigin));
   } catch (err) {
     console.error("❌ GOOGLE AUTH CALLBACK ERROR:", err);
     const clientOrigin = getClientOrigin(req);
     const token = getToken(req);
     if (token || (req.query?.state && decodeOauthState(req.query.state)?.mode === "link")) {
       const msg = encodeURIComponent(err.message || "Account connection failed.");
-      return res.redirect(`${clientOrigin}/profile?oauth_error=${msg}`);
+      return res.redirect(appendVercelBypassToken(`${clientOrigin}/profile?oauth_error=${msg}`));
     }
-    return res.redirect(`${clientOrigin}/login?oauth=error`);
+    return res.redirect(appendVercelBypassToken(`${clientOrigin}/login?oauth=error`));
   }
 }
 
