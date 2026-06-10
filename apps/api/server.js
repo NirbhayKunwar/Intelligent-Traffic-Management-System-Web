@@ -1,4 +1,10 @@
 import "./loadEnv.js";
+import path from "path";
+import { fileURLToPath } from "url";
+import { existsSync } from "fs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import express from "express";
 import cookieParser from "cookie-parser";
@@ -83,6 +89,12 @@ app.get("/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login?oauth=failed", session: false }),
   handleGoogleCallback
 );
+
+// Google OAuth initiate fallback handler (redirect to the actual API route)
+app.get("/auth/google", (req, res) => {
+  const queryString = new URLSearchParams(req.query).toString();
+  res.redirect(`/api/auth/google${queryString ? "?" + queryString : ""}`);
+});
 
 // Standard rate limiters
 app.use("/api/auth/login", authRateLimiter);
@@ -177,7 +189,12 @@ if (isProduction) {
     if (req.method !== "GET" || req.path.startsWith("/api")) {
       return next();
     }
-    res.sendFile(path.join(frontendDist, "index.html"));
+    const indexPath = path.join(frontendDist, "index.html");
+    if (existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      next();
+    }
   });
 }
 
