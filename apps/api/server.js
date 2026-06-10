@@ -1,7 +1,5 @@
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-import { existsSync } from "fs";
+import "./loadEnv.js";
+
 import express from "express";
 import cookieParser from "cookie-parser";
 import session from "express-session";
@@ -34,24 +32,6 @@ import mongoose from "mongoose";
 import { verifyModelServiceHealth } from "./services/aiService.js";
 import { verifyEmailTransporter } from "./services/emailService.js";
 import { cloudinary } from "./config/cloudinary.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load environment variables
-dotenv.config();
-
-// Explicitly load root-level .env
-const rootEnvPath = path.resolve(__dirname, "..", "..", ".env");
-if (existsSync(rootEnvPath)) {
-  dotenv.config({ path: rootEnvPath, override: true });
-}
-
-// Explicitly load app-level .env (takes precedence)
-const dataEnvPath = path.join(__dirname, "data", ".env");
-if (existsSync(dataEnvPath)) {
-  dotenv.config({ path: dataEnvPath, override: true });
-}
 
 const PORT = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
