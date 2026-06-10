@@ -81,30 +81,25 @@ export default function Navbar({ scrolled }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const root = document.documentElement;
-    const applyTheme = () => {
-      if (theme === "dark") {
-        root.classList.add("dark");
-      } else if (theme === "light") {
-        root.classList.remove("dark");
-      } else {
-        const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        root.classList.toggle("dark", systemDark);
-      }
-    };
-    applyTheme();
 
-    if (!window.matchMedia) return;
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const listener = () => {
-      setSystemPrefersDark(media.matches);
-      if (theme === "system") {
-        applyTheme();
+    const handleSync = (e) => {
+      if (e.detail) {
+        setTheme(e.detail.theme);
+        const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        setSystemPrefersDark(isSystemDark);
       }
     };
-    media.addEventListener("change", listener);
-    return () => media.removeEventListener("change", listener);
-  }, [theme]);
+
+    window.addEventListener("sync-theme-state", handleSync);
+    
+    if (window.matchMedia) {
+      setSystemPrefersDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    }
+
+    return () => {
+      window.removeEventListener("sync-theme-state", handleSync);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -147,16 +142,20 @@ export default function Navbar({ scrolled }) {
     }
   };
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem("theme", theme);
-    } catch {
-      // Ignore
-    }
-  }, [theme]);
-
   const isDarkMode = theme === "dark" || (theme === "system" && systemPrefersDark);
+
+  const handleThemeToggle = () => {
+    const nextTheme = isDarkMode ? "light" : "dark";
+    setTheme(nextTheme);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("theme", nextTheme);
+        window.dispatchEvent(new CustomEvent("local-theme-changed"));
+      } catch (e) {
+        // Ignore
+      }
+    }
+  };
 
   const isActiveLink = (hash) => location.pathname === "/" && location.hash === hash;
 
@@ -241,7 +240,7 @@ export default function Navbar({ scrolled }) {
             <div className="hidden md:flex items-center gap-4">
               {/* Theme Toggle Button */}
               <button
-                onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+                onClick={handleThemeToggle}
                 className="p-2 text-theme-text-secondary hover:text-theme-text-primary rounded-xl hover:bg-theme-card/50 transition duration-200"
                 aria-label="Toggle theme"
               >
@@ -444,7 +443,7 @@ export default function Navbar({ scrolled }) {
                 <div className="flex items-center justify-between py-4 border-t border-theme-border">
                   <span className="text-sm font-semibold text-theme-text-secondary">Theme</span>
                   <button
-                    onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+                    onClick={handleThemeToggle}
                     className="flex items-center gap-2 px-4 py-2 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-medium bg-theme-card/55 hover:bg-theme-card min-h-[44px]"
                   >
                     {isDarkMode ? (

@@ -72,6 +72,18 @@ export default function Profile() {
     return () => window.removeEventListener("color-theme-changed", handleColorThemeChanged);
   }, []);
 
+  // Sync light/dark/system theme state if changed elsewhere
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleSync = (e) => {
+      if (e.detail) {
+        setThemePreference(e.detail.theme);
+      }
+    };
+    window.addEventListener("sync-theme-state", handleSync);
+    return () => window.removeEventListener("sync-theme-state", handleSync);
+  }, []);
+
   const [isDarkMode, setIsDarkMode] = useState(false);
   useEffect(() => {
     const checkDark = () => setIsDarkMode(document.documentElement.classList.contains("dark"));
@@ -686,20 +698,13 @@ export default function Profile() {
 
   const selectTheme = (themeName) => {
     setThemePreference(themeName);
-    if (themeName === "dark") {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else if (themeName === "light") {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    } else {
-      const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (isSystemDark) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("theme", themeName);
+        window.dispatchEvent(new CustomEvent("local-theme-changed"));
+      } catch (e) {
+        // Ignore
       }
-      localStorage.removeItem("theme");
     }
     setFormSuccess(`Theme changed to ${themeName}`);
   };

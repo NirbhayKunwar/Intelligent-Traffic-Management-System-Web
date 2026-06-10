@@ -118,6 +118,69 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const applyGlobalTheme = () => {
+      const theme = localStorage.getItem("theme") || "system";
+      const root = document.documentElement;
+      
+      let isDark = false;
+      if (theme === "dark") {
+        isDark = true;
+      } else if (theme === "light") {
+        isDark = false;
+      } else {
+        isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      }
+      
+      if (isDark) {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+
+      window.dispatchEvent(new CustomEvent("sync-theme-state", { 
+        detail: { theme, isDark } 
+      }));
+    };
+
+    applyGlobalTheme();
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleMediaChange = () => {
+      const theme = localStorage.getItem("theme") || "system";
+      if (theme === "system") {
+        applyGlobalTheme();
+      }
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleMediaChange);
+    } else {
+      mediaQuery.addListener(handleMediaChange);
+    }
+
+    window.addEventListener("local-theme-changed", applyGlobalTheme);
+
+    const handleStorageChange = (e) => {
+      if (e.key === "theme") {
+        applyGlobalTheme();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener("change", handleMediaChange);
+      } else {
+        mediaQuery.removeListener(handleMediaChange);
+      }
+      window.removeEventListener("local-theme-changed", applyGlobalTheme);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
 // The Router is placed in the App component to ensure that the ScrollToHash component can access the location and scroll to the correct section on page load or when navigating to a different route with a hash. The AppShell component is responsible for rendering the main layout of the application, including the Navbar and the different pages based on the current route. By placing the Router in the App component, we ensure that the routing and scroll behavior work seamlessly across all pages of the application.
   return (
     <Router basename={import.meta.env.BASE_URL}>

@@ -8,16 +8,16 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx">
-      // This script checks the user's theme preference stored in localStorage and applies the appropriate theme class to the document's root element. If the user has set their theme to "dark", it adds the "dark" class to enable dark mode. If the user has set their theme to "system", it checks the system's color scheme preference using the matchMedia API and applies the "dark" class if the system prefers dark mode. This allows for a seamless user experience by respecting both user and system preferences for light and dark themes.
-      const theme = localStorage.getItem("theme");
-  if (theme === "dark") {
-    document.documentElement.classList.add("dark");
-  } else if (theme === "system") {
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      document.documentElement.classList.add("dark");
-    }
-  }
+    <script>
+      (function() {
+        const theme = localStorage.getItem("theme") || "system";
+        if (theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+      })();
     </script>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
