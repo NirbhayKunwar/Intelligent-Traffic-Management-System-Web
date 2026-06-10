@@ -192,9 +192,9 @@ if (isProduction) {
   const frontendDist = path.join(__dirname, "..", "web", "dist");
   app.use(express.static(frontendDist));
   
-  app.get("/*splat", (req, res, next) => {
-    // Avoid intercepting API paths
-    if (req.path.startsWith("/api")) {
+  app.use((req, res, next) => {
+    // Only serve index.html for GET requests that do not target API endpoints
+    if (req.method !== "GET" || req.path.startsWith("/api")) {
       return next();
     }
     res.sendFile(path.join(frontendDist, "index.html"));
