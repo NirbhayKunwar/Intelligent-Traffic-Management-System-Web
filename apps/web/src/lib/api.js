@@ -1,5 +1,14 @@
 const rawApiBase = import.meta.env.VITE_API_BASE_URL || "";
 
+export function hasApiBaseUrl() {
+  return Boolean(String(rawApiBase).trim());
+}
+
+function isProtectedFrontendFallbackRisk() {
+  if (typeof window === "undefined") return false;
+  return !hasApiBaseUrl() && /\.vercel\.app$/i.test(window.location.hostname);
+}
+
 export function getApiBaseUrl() {
   const cleanBase = String(rawApiBase).trim().replace(/\/+$/, "");
   return cleanBase.replace(/\/api$/i, "");
@@ -12,6 +21,9 @@ export function apiUrl(path) {
 }
 
 export function buildGoogleAuthUrl(params) {
+  if (isProtectedFrontendFallbackRisk()) {
+    throw new Error("Google sign-in is not configured for this deployment. Set VITE_API_BASE_URL to the backend URL in Vercel.");
+  }
   const url = new URL(apiUrl("/api/auth/google"), window.location.origin);
   url.searchParams.set("clientOrigin", window.location.origin);
   Object.entries(params || {}).forEach(([key, value]) => {

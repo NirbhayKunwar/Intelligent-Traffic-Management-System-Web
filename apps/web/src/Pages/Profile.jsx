@@ -628,6 +628,15 @@ export default function Profile() {
     }
   };
 
+  const handleConnectGoogle = () => {
+    setFormError("");
+    try {
+      window.location.assign(buildGoogleAuthUrl({ mode: "link" }));
+    } catch (err) {
+      setFormError(err.message || "Google account linking is not configured.");
+    }
+  };
+
   const handleSaveChanges = async () => {
     setFormError("");
     setFormSuccess("");
@@ -926,9 +935,9 @@ export default function Profile() {
                         Disconnect Google
                       </button>
                     ) : (
-                      <a href={buildGoogleAuthUrl({ mode: "link" })} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-700">
+                      <button type="button" onClick={handleConnectGoogle} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-700">
                         Connect Google Account
-                      </a>
+                      </button>
                     )}
                   </div>
                 </div>

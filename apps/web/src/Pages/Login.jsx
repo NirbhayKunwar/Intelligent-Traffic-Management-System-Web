@@ -251,8 +251,12 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => {
-                  const url = buildGoogleAuthUrl({ mode: "login" });
-                  window.open(url, "_self");
+                  try {
+                    const url = buildGoogleAuthUrl({ mode: "login" });
+                    window.open(url, "_self");
+                  } catch (err) {
+                    setError(err.message || "Google sign-in is not configured.");
+                  }
                 }}
                 className="w-full h-11 rounded-xl border border-theme-border/50 bg-theme-bg/25 text-theme-text-secondary hover:bg-theme-card/80 transition-all text-sm font-semibold flex items-center justify-center gap-2"
               >

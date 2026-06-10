@@ -389,12 +389,16 @@ export default function SignUp() {
                     setError("Organization is required for operators.");
                     return;
                   }
-                  const url = buildGoogleAuthUrl({
-                    mode: "signup",
-                    role: formData.role,
-                    organization: formData.role === "operator" ? formData.organization.trim() : "",
-                  });
-                  window.open(url, "_self");
+                  try {
+                    const url = buildGoogleAuthUrl({
+                      mode: "signup",
+                      role: formData.role,
+                      organization: formData.role === "operator" ? formData.organization.trim() : "",
+                    });
+                    window.open(url, "_self");
+                  } catch (err) {
+                    setError(err.message || "Google sign-up is not configured.");
+                  }
                 }}
                 className="w-full h-11 rounded-xl border border-theme-border/50 bg-theme-bg/25 text-theme-text-secondary hover:bg-theme-card/85 transition-all text-sm font-semibold flex items-center justify-center gap-2"
               >
