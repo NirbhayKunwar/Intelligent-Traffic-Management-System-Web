@@ -16,32 +16,23 @@ export class EmergencyDispatchService {
     console.log("--------------------------------------------------");
 
     try {
-      const allUsers = await User.find();
-      const googleLinkedUsers = allUsers.filter((u) => {
-        const providers = Array.isArray(u.linkedProviders) ? u.linkedProviders : [];
-        return providers.includes("google") || Boolean(u.googleId);
-      });
+      // Send to ALL registered users with a valid email — not just Google-linked
+      const allUsers = await User.find({});
+      const recipients = new Set();
 
-      const recipients = [];
-      for (const user of googleLinkedUsers) {
-        const providers = Array.isArray(user.linkedProviders) ? user.linkedProviders : [];
-        let recipient = String(user.googleEmail || "").trim().toLowerCase();
+      for (const user of allUsers) {
+        // Prefer googleEmail if available (verified by Google OAuth)
+        const googleEmail = String(user.googleEmail || "").trim().toLowerCase();
+        const primaryEmail = String(user.email || "").trim().toLowerCase();
 
-        if (!recipient) {
-          const fallbackEmail = String(user.email || "").trim().toLowerCase();
-          if (fallbackEmail) {
-            recipient = fallbackEmail;
-            user.googleEmail = fallbackEmail;
-            if (!providers.includes("google")) user.linkedProviders = [...providers, "google"];
-            await user.save().catch((err) => console.warn(`Google email backfill failed: ${err.message}`));
-          }
-        }
-
-        if (recipient) recipients.push(recipient);
+        if (googleEmail) recipients.add(googleEmail);
+        if (primaryEmail) recipients.add(primaryEmail);
       }
 
-      if (recipients.length > 0) {
-        console.log(`📡 BROADCAST: Found ${recipients.length} verified citizens. Dispatching alerts...`);
+      const recipientList = [...recipients].filter(Boolean);
+
+      if (recipientList.length > 0) {
+        console.log(`📡 BROADCAST: Found ${recipientList.length} verified recipients. Dispatching alerts...`);
         const details = {
           location: locationStr,
           message,
@@ -50,12 +41,24 @@ export class EmergencyDispatchService {
           etas
         };
 
-        // Fire emails in background
-        Promise.all(recipients.map((email) => sendAccidentEmail(email, details)))
-          .then(() => console.log("📡 BROADCAST: All alerts dispatched successfully."))
-          .catch((err) => console.error("❌ BROADCAST ERROR:", err));
+        // Send emails and log individual failures (don't let one failure block others)
+        const results = await Promise.allSettled(
+          recipientList.map((email) => sendAccidentEmail(email, details))
+        );
+
+        let sent = 0, failed = 0;
+        results.forEach((r, i) => {
+          if (r.status === "fulfilled") {
+            sent++;
+          } else {
+            failed++;
+            console.error(`❌ Alert email failed for ${recipientList[i]}:`, r.reason?.message || r.reason);
+          }
+        });
+
+        console.log(`📡 BROADCAST: ${sent} sent, ${failed} failed out of ${recipientList.length} recipients.`);
       } else {
-        console.log("📡 BROADCAST: Skip. Reason: No verified citizens found.");
+        console.log("📡 BROADCAST: Skip. Reason: No registered users found.");
       }
     } catch (err) {
       console.error("❌ Dispatch broadcast logic failure:", err.message);

@@ -2,28 +2,38 @@ import nodemailer from "nodemailer";
 
 const EMAIL_HOST = process.env.EMAIL_HOST || "smtp.gmail.com";
 const EMAIL_PORT = Number(process.env.EMAIL_PORT || 587);
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASS = process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD;
 
-// Configure mail transporter
-const transporter = nodemailer.createTransport({
-  host: EMAIL_HOST,
-  port: EMAIL_PORT,
-  secure: EMAIL_PORT === 465, // True for 465, false for other ports
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS,
-  },
-});
+function getEmailUser() { return process.env.EMAIL_USER; }
+function getEmailPass() { return process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD; }
+
+// Lazy transporter — created on first use so env vars are always fresh
+let _transporter = null;
+function getTransporter() {
+  const user = getEmailUser();
+  const pass = getEmailPass();
+  if (!user || !pass) return null;
+
+  if (!_transporter) {
+    _transporter = nodemailer.createTransport({
+      host: EMAIL_HOST,
+      port: EMAIL_PORT,
+      secure: EMAIL_PORT === 465, // True for 465, false for other ports
+      auth: { user, pass },
+    });
+  }
+  return _transporter;
+}
 
 export async function sendPasswordResetEmail(recipientEmail, resetLink) {
-  if (!EMAIL_USER || !EMAIL_PASS) {
+  const user = getEmailUser();
+  const transporter = getTransporter();
+  if (!transporter) {
     console.log(`[SIMULATION] Password reset email for ${recipientEmail}: ${resetLink}`);
     return;
   }
 
-  const mailOptions = {
-    from: `"ITMS Security" <${EMAIL_USER}>`,
+  await transporter.sendMail({
+    from: `"ITMS Security" <${user}>`,
     to: recipientEmail,
     subject: "Reset your ITMS password",
     html: `
@@ -39,19 +49,19 @@ export async function sendPasswordResetEmail(recipientEmail, resetLink) {
         <p>This link expires in 1 hour. If you did not request this, you can ignore this email.</p>
       </div>
     `,
-  };
-
-  await transporter.sendMail(mailOptions);
+  });
 }
 
 export async function sendPasswordResetOtpEmail(recipientEmail, otp) {
-  if (!EMAIL_USER || !EMAIL_PASS) {
+  const user = getEmailUser();
+  const transporter = getTransporter();
+  if (!transporter) {
     console.log(`[SIMULATION] Password reset OTP email for ${recipientEmail}: ${otp}`);
     return;
   }
 
-  const mailOptions = {
-    from: `"ITMS Security" <${EMAIL_USER}>`,
+  await transporter.sendMail({
+    from: `"ITMS Security" <${user}>`,
     to: recipientEmail,
     subject: "Your ITMS Password Reset OTP",
     html: `
@@ -67,14 +77,14 @@ export async function sendPasswordResetOtpEmail(recipientEmail, otp) {
         <p style="color: #475569; font-size: 14px;">This OTP code is valid for 10 minutes. If you did not make this request, please ignore this email.</p>
       </div>
     `,
-  };
-
-  await transporter.sendMail(mailOptions);
+  });
 }
 
 export async function sendAccidentEmail(recipientEmail, accidentDetails) {
-  if (!EMAIL_USER || !EMAIL_PASS) {
-    console.log(`[SIMULATION] Email skip. Accident alert details for ${recipientEmail}:`, accidentDetails);
+  const user = getEmailUser();
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.log(`[SIMULATION] Email skip — EMAIL_USER/EMAIL_PASS not set. Accident alert details for ${recipientEmail}:`, accidentDetails);
     return;
   }
 
@@ -89,13 +99,13 @@ export async function sendAccidentEmail(recipientEmail, accidentDetails) {
       `
     : "";
 
-  const mailOptions = {
-    from: `"ITMS Emergency Alerts" <${EMAIL_USER}>`,
+  await transporter.sendMail({
+    from: `"ITMS Emergency Alerts" <${user}>`,
     to: recipientEmail,
     subject: "🚨 URGENT: Traffic Incident/Accident Detected in Your Area",
     html: `
-      <div style="font-family: sans-serif; padding: 20px; border: 1px solid #f44336; border-radius: 8px;">
-        <h2 style="color: #f44336;">Emergency Traffic Alert</h2>
+      <div style="font-family: sans-serif; padding: 20px; border: 2px solid #f44336; border-radius: 8px; max-width: 600px; margin: auto;">
+        <h2 style="color: #f44336;">🚨 Emergency Traffic Alert</h2>
         <p>This is an automated safety alert from the <strong>Intelligent Traffic Management System (ITMS)</strong>.</p>
         <hr/>
         <p><strong>Incident:</strong> Accident/Congestion detected with high confidence.</p>
@@ -110,25 +120,26 @@ export async function sendAccidentEmail(recipientEmail, accidentDetails) {
           <li><strong>Fire Dept:</strong> Dispatched (ETA: ${accidentDetails.etas.fire} min)</li>
         </ul>
         <p style="font-size: 12px; color: #666; margin-top: 20px;">
-          Please avoid this area to clear the way for emergency responders. 
+          Please avoid this area to clear the way for emergency responders.<br/>
           Drive safe, <br/>ITMS Command Center
         </p>
       </div>
     `,
-  };
-
-  await transporter.sendMail(mailOptions);
+  });
 }
 
 export async function verifyEmailTransporter() {
-  if (!EMAIL_USER || !EMAIL_PASS) {
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.warn("[emailService] EMAIL_USER or EMAIL_PASS not set — email sending is disabled.");
     return false;
   }
   try {
     await transporter.verify();
+    console.log("[emailService] ✅ SMTP transporter verified successfully.");
     return true;
   } catch (err) {
-    console.error("Transporter verify fail:", err.message);
+    console.error("[emailService] ❌ Transporter verify failed:", err.message);
     return false;
   }
 }
