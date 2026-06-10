@@ -52,10 +52,20 @@ export async function addAlertsFromResult(job, result) {
         result.congestionLevel = "High";
         result.index = 85;
       }
+      const alertMsg = `Congestion ${result.congestionLevel} on ${job.sourceLabel || "unknown source"}`;
+
+      // Dispatch congestion alerts
+      const dispatcher = new EmergencyDispatchService();
+      await dispatcher.triggerCongestionAlert(
+        job.sourceLabel || "Unknown Location",
+        alertMsg,
+        { latitude: lat, longitude: lng }
+      ).catch(err => console.warn("Congestion dispatch trigger failed:", err.message));
+
       await Alert.create({
         type: "congestion",
         severity: result.index >= 80 ? "High" : result.index >= 60 ? "Medium" : "Low",
-        message: `Congestion ${result.congestionLevel} on ${job.sourceLabel || "unknown source"}`,
+        message: alertMsg,
         active: true,
         cameraId: sourceId,
         locationStr: job.sourceLabel,

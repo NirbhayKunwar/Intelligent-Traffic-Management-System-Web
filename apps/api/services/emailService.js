@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import "../loadEnv.js";
 
 const EMAIL_HOST = process.env.EMAIL_HOST || "smtp.gmail.com";
 const EMAIL_PORT = Number(process.env.EMAIL_PORT || 587);
@@ -164,6 +165,60 @@ export async function sendAccidentEmail(recipientEmail, accidentDetails) {
   });
 }
 
+export async function sendBrandedResetOtpEmail(recipientEmail, otp) {
+  const user = getEmailUser();
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.log(`[SIMULATION] Branded Reset OTP email for ${recipientEmail}: ${otp}`);
+    return;
+  }
+
+  await transporter.sendMail({
+    from: `"ITMS Security" <${user}>`,
+    to: recipientEmail,
+    subject: "Password Reset Verification Code",
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; padding: 32px; color: #f8fafc; border-radius: 16px; max-width: 550px; margin: auto; border: 1px solid #1e293b; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="display: inline-block; background: linear-gradient(135deg, #0ea5e9, #10b981); padding: 12px 20px; border-radius: 12px; font-weight: bold; color: #ffffff; font-size: 20px; letter-spacing: 1.5px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);">
+            ITMS COMMAND CENTER
+          </div>
+        </div>
+        
+        <div style="background-color: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155;">
+          <h2 style="color: #38bdf8; font-size: 18px; font-weight: 600; margin-top: 0; margin-bottom: 16px; text-align: center; text-transform: uppercase; letter-spacing: 0.5px;">
+            Password Reset Verification Code
+          </h2>
+          <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 24px; text-align: center;">
+            You requested to reset the password for your ITMS (Intelligent Traffic Management System) account. Please use the verification code below to authorize this request:
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #34d399; background-color: #0f172a; padding: 14px 28px; border-radius: 8px; border: 1px dashed #34d399; display: inline-block;">
+              ${otp}
+            </span>
+          </div>
+          
+          <div style="background-color: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 12px; border-radius: 4px; margin-top: 24px; margin-bottom: 16px;">
+            <p style="color: #fca5a5; font-size: 12px; line-height: 1.5; margin: 0; font-weight: 500;">
+              <strong>⚠️ Expiration warning:</strong> This code is valid for exactly <strong>10 minutes</strong>. Once expired or validated, it will become inactive to protect your account.
+            </p>
+          </div>
+        </div>
+        
+        <div style="margin-top: 24px; border-top: 1px solid #1e293b; padding-top: 16px; text-align: center;">
+          <p style="color: #64748b; font-size: 11px; line-height: 1.6; margin: 0;">
+            <strong>Security Notice:</strong> If you did not request a password reset, please ignore this message. Your credentials remain safe and no changes have been applied.
+          </p>
+          <p style="color: #475569; font-size: 10px; margin-top: 12px; margin-bottom: 0;">
+            &copy; 2026 ITMS Inc. Systems Division. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `,
+  });
+}
+
 export async function verifyEmailTransporter() {
   const transporter = getTransporter();
   if (!transporter) {
@@ -178,4 +233,48 @@ export async function verifyEmailTransporter() {
     console.error("[emailService] ❌ Transporter verify failed:", err.message);
     return false;
   }
+}
+
+export async function sendCongestionEmail(recipientEmail, congestionDetails) {
+  const user = getEmailUser();
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.log(`[SIMULATION] Email skip — EMAIL_USER/EMAIL_PASS not set. Congestion alert details for ${recipientEmail}:`, congestionDetails);
+    return;
+  }
+
+  const lat = Number(congestionDetails?.latitude);
+  const lng = Number(congestionDetails?.longitude);
+  const hasCoords = Number.isFinite(lat) && Number.isFinite(lng) && !(lat === 0 && lng === 0);
+  const mapsUrl = hasCoords ? `https://maps.google.com/?q=${lat},${lng}` : "";
+  const locationDetailsHtml = hasCoords
+    ? `
+        <p><strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
+        <p><a href="${mapsUrl}" target="_blank" rel="noopener noreferrer">Open in Google Maps</a></p>
+      `
+    : "";
+
+  await transporter.sendMail({
+    from: `"ITMS Traffic Alerts" <${user}>`,
+    to: recipientEmail,
+    subject: "⚠️ TRAFFIC ALERT: High Congestion Detected",
+    html: `
+      <div style="font-family: sans-serif; padding: 20px; border: 2px solid #ff9800; border-radius: 8px; max-width: 600px; margin: auto;">
+        <h2 style="color: #ff9800;">⚠️ Traffic Congestion Alert</h2>
+        <p>This is an automated traffic alert from the <strong>Intelligent Traffic Management System (ITMS)</strong>.</p>
+        <hr/>
+        <p><strong>Incident:</strong> High traffic congestion detected.</p>
+        <p><strong>Location:</strong> ${congestionDetails.location}</p>
+        ${locationDetailsHtml}
+        <p><strong>Details:</strong> ${congestionDetails.message}</p>
+        <hr/>
+        <p style="font-size: 13px; color: #333;">
+          Please plan your route accordingly and expect delays or seek alternative paths if possible.
+        </p>
+        <p style="font-size: 12px; color: #666; margin-top: 20px;">
+          Drive safe, <br/>ITMS Command Center
+        </p>
+      </div>
+    `,
+  });
 }

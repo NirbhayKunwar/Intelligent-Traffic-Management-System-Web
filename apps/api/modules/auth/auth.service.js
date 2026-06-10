@@ -10,7 +10,7 @@ const isProduction = process.env.NODE_ENV === "production";
 
 export function signToken(user) {
   return jwt.sign(
-    { sub: user.id, email: user.email, role: user.role },
+    { sub: user.id, email: user.email, role: user.role, tokenVersion: user.tokenVersion || 0 },
     JWT_SECRET,
     { expiresIn: "7d" }
   );

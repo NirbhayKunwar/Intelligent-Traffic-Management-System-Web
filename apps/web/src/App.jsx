@@ -13,6 +13,7 @@ import { applyTheme } from "./design-system/themesList";
 const Login = lazy(() => import("./Pages/Login"));
 const SignUp = lazy(() => import("./Pages/Signup"));
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword"));
+const VerifyOtp = lazy(() => import("./Pages/VerifyOtp"));
 const ResetPassword = lazy(() => import("./Pages/ResetPassword"));
 const Terms = lazy(() => import("./Pages/Terms"));
 const Privacy = lazy(() => import("./Pages/Privacy"));
@@ -52,13 +53,10 @@ function ScrollToHash() {
 }
 // The AppShell component is responsible for rendering the main layout of the application, including the Navbar and the different pages based on the current route. It uses the useLocation hook to access the current location object, which contains information about the current URL. The hideNavbar and hideFooter variables are set to true if the current pathname is either "/login" or "/signup", which is used to conditionally render the Navbar and Footer components, hiding them on the login and signup pages for a cleaner user interface. The Routes component defines the different routes of the application, rendering the appropriate components based on the current path. The login and signup routes are defined to ensure that the Navbar is hidden on these pages, while still allowing the scroll listener to function properly, providing a consistent user experience across all pages of the application.
 function AppShell({ scrolled }) {
-  // The useLocation hook is used to access the current location object, which contains information about the current URL.
   const location = useLocation();
-  // The hideNavbar and hideFooter variables are set to true if the current pathname is either "/login" or "/signup". This is used to conditionally render the Navbar and Footer components, hiding them on the login and signup pages for a cleaner user interface.
-  const authPagePaths = ["/login", "/signup", "/forgot-password"];
-  const isResetPasswordPage = location.pathname.startsWith("/reset-password/");
-  const hideNavbar = authPagePaths.includes(location.pathname) || isResetPasswordPage;
-  const hideFooter = authPagePaths.includes(location.pathname) || isResetPasswordPage;
+  const authPagePaths = ["/login", "/signup", "/forgot-password", "/verify-otp", "/reset-password"];
+  const hideNavbar = authPagePaths.includes(location.pathname);
+  const hideFooter = authPagePaths.includes(location.pathname);
 // The Routes component defines the different routes of the application, rendering the appropriate components based on the current path. The login and signup routes are defined to ensure that the Navbar is hidden on these pages, while still allowing the scroll listener to function properly, providing a consistent user experience across all pages of the application.
   return (
     <div className="min-h-screen bg-theme-bg text-theme-text-primary transition duration-300">
@@ -81,7 +79,8 @@ function AppShell({ scrolled }) {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/case-study" element={<CaseStudy />} />
           <Route path="/privacy" element={<Privacy />} />

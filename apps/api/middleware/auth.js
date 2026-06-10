@@ -16,12 +16,18 @@ export function getToken(req) {
   return value || null;
 }
 
-export function requireAuth(req, res, next) {
+export async function requireAuth(req, res, next) {
   const token = getToken(req);
   if (!token) return res.status(401).json({ message: "Unauthorized. Token missing." });
 
   try {
     const payload = jwt.verify(token, JWT_SECRET);
+    
+    const user = await User.findOne({ id: payload.sub });
+    if (!user || (user.tokenVersion || 0) !== (payload.tokenVersion || 0)) {
+      return res.status(401).json({ message: "Session expired. Please log in again." });
+    }
+
     req.userId = payload.sub;
     req.userRole = payload.role;
     return next();

@@ -1,5 +1,5 @@
 import { User } from "../modules/auth/auth.model.js";
-import { sendAccidentEmail } from "./emailService.js";
+import { sendAccidentEmail, sendCongestionEmail } from "./emailService.js";
 
 export class EmergencyDispatchService {
   async triggerFullResponse(locationStr, message, incidentGeo = {}) {
@@ -16,7 +16,7 @@ export class EmergencyDispatchService {
     console.log("--------------------------------------------------");
 
     try {
-      // Send to ALL registered users with a valid email — not just Google-linked
+      // Send to ALL registered users (both normal users and operator users) with a valid email
       const allUsers = await User.find({});
       const recipients = new Set();
 
@@ -32,7 +32,7 @@ export class EmergencyDispatchService {
       const recipientList = [...recipients].filter(Boolean);
 
       if (recipientList.length > 0) {
-        console.log(`📡 BROADCAST: Found ${recipientList.length} verified recipients. Dispatching alerts...`);
+        console.log(`📡 BROADCAST: Found ${recipientList.length} verified recipients (including normal users and operators). Dispatching alerts...`);
         const details = {
           location: locationStr,
           message,
@@ -70,5 +70,60 @@ export class EmergencyDispatchService {
     console.log("=".repeat(50) + "\n");
 
     return etas;
+  }
+
+  async triggerCongestionAlert(locationStr, message, incidentGeo = {}) {
+    console.log("\n" + "=".repeat(50));
+    console.log("⚠️ TRAFFIC CONGESTION DISPATCH");
+    console.log(`📍 LOCATION: ${locationStr}`);
+    console.log(`📢 ALERT: ${message}`);
+    console.log("--------------------------------------------------");
+
+    try {
+      // Send to ALL registered users (both normal users and operator users) with a valid email
+      const allUsers = await User.find({});
+      const recipients = new Set();
+
+      for (const user of allUsers) {
+        const googleEmail = String(user.googleEmail || "").trim().toLowerCase();
+        const primaryEmail = String(user.email || "").trim().toLowerCase();
+
+        if (googleEmail) recipients.add(googleEmail);
+        if (primaryEmail) recipients.add(primaryEmail);
+      }
+
+      const recipientList = [...recipients].filter(Boolean);
+
+      if (recipientList.length > 0) {
+        console.log(`📡 BROADCAST: Found ${recipientList.length} verified recipients (including normal users and operators). Dispatching congestion alerts...`);
+        const details = {
+          location: locationStr,
+          message,
+          latitude: incidentGeo.latitude,
+          longitude: incidentGeo.longitude
+        };
+
+        const results = await Promise.allSettled(
+          recipientList.map((email) => sendCongestionEmail(email, details))
+        );
+
+        let sent = 0, failed = 0;
+        results.forEach((r, i) => {
+          if (r.status === "fulfilled") {
+            sent++;
+          } else {
+            failed++;
+            console.error(`❌ Congestion alert email failed for ${recipientList[i]}:`, r.reason?.message || r.reason);
+          }
+        });
+
+        console.log(`📡 BROADCAST: ${sent} sent, ${failed} failed out of ${recipientList.length} recipients.`);
+      } else {
+        console.log("📡 BROADCAST: Skip. Reason: No registered users found.");
+      }
+    } catch (err) {
+      console.error("❌ Dispatch congestion broadcast logic failure:", err.message);
+    }
+    console.log("=".repeat(50) + "\n");
   }
 }

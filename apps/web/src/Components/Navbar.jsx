@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { CircleUser, Menu, X, Sun, Moon, Palette } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +11,9 @@ export default function Navbar({ scrolled }) {
   const [authUser, setAuthUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const sidebarRef = useRef(null);
+  const triggerRef = useRef(null);
 
   useEffect(() => {
     if (mobileMenuIsOpen) {
@@ -24,6 +28,65 @@ export default function Navbar({ scrolled }) {
       document.body.style.overflow = "";
     };
   }, [mobileMenuIsOpen]);
+
+  useEffect(() => {
+    if (mobileMenuIsOpen) {
+      setTimeout(() => {
+        const focusable = sidebarRef.current?.querySelectorAll(
+          'a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable && focusable.length > 0) {
+          focusable[0].focus();
+        }
+      }, 100);
+    } else {
+      if (triggerRef.current) {
+        triggerRef.current.focus();
+      }
+    }
+  }, [mobileMenuIsOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuIsOpen) return;
+    const handleGlobalKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setMobileMenuIsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [mobileMenuIsOpen]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      setMobileMenuIsOpen(false);
+      return;
+    }
+    if (e.key === "Tab") {
+      if (!sidebarRef.current) return;
+      const focusable = sidebarRef.current.querySelectorAll(
+        'a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          last.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === last) {
+          first.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  };
 
   const [colorThemeMenuOpen, setColorThemeMenuOpen] = useState(false);
   const colorThemeMenuRef = useRef(null);
@@ -190,7 +253,7 @@ export default function Navbar({ scrolled }) {
           </div>
 
           {/* Center nav links */}
-          <div className="hidden md:flex flex-1 items-center justify-center gap-8">
+          <div className="hidden lg:flex flex-1 items-center justify-center gap-8">
             <Link
               to="/#features"
               className={`text-sm font-semibold transition-colors ${
@@ -237,7 +300,7 @@ export default function Navbar({ scrolled }) {
 
           <div className="flex items-center gap-4">
             {/* Actions for Desktop */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-4">
               {/* Theme Toggle Button */}
               <button
                 onClick={handleThemeToggle}
@@ -361,10 +424,12 @@ export default function Navbar({ scrolled }) {
 
             {/* Mobile menu button */}
             <button
+              ref={triggerRef}
               type="button"
-              className="md:hidden p-2 text-theme-text-secondary hover:text-theme-text-primary rounded-xl hover:bg-theme-card/50"
+              className="lg:hidden p-2 text-theme-text-secondary hover:text-theme-text-primary rounded-xl hover:bg-theme-card/50"
               onClick={() => setMobileMenuIsOpen((prev) => !prev)}
               aria-label={mobileMenuIsOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuIsOpen}
             >
               {mobileMenuIsOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -372,176 +437,186 @@ export default function Navbar({ scrolled }) {
         </div>
       </div>
 
-      {/* Nav Links for Mobile Drawer */}
-      <AnimatePresence>
-        {mobileMenuIsOpen && (
-          <>
-            {/* Backdrop Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileMenuIsOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[999998] md:hidden"
-            />
-            {/* Slide-in off-canvas drawer */}
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 w-full max-w-xs sm:max-w-sm bg-theme-bg border-l border-theme-border shadow-2xl z-[999999] md:hidden flex flex-col h-full overflow-y-auto"
-            >
-              {/* Drawer Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-theme-border">
-                <Link to="/" onClick={() => setMobileMenuIsOpen(false)} className="flex items-center gap-2">
-                  <div className="p-1.5 bg-gradient-to-tr from-theme-accent/15 to-theme-accent-alt/15 rounded-lg border border-theme-accent/20">
-                    <svg className="w-5 h-5" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#navbar-logo-gradient)" />
-                      <circle cx="32" cy="32" r="14" stroke="white" stroke-width="4" fill="none" />
-                    </svg>
-                  </div>
-                  <span className="text-lg font-poppins font-extrabold tracking-tight bg-gradient-to-r from-theme-accent to-theme-accent-alt bg-clip-text text-transparent">
-                    ITMS
-                  </span>
-                </Link>
-                <button
-                  type="button"
-                  className="p-2 rounded-xl text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-card/50 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                  onClick={() => setMobileMenuIsOpen(false)}
-                  aria-label="Close menu"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Drawer Links */}
-              <div className="px-6 py-6 space-y-6 flex-1">
-                <Link
-                  to="/#features"
-                  onClick={() => setMobileMenuIsOpen(false)}
-                  className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
-                >
-                  Features
-                </Link>
-                <Link
-                  to="/#about"
-                  onClick={() => setMobileMenuIsOpen(false)}
-                  className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
-                >
-                  About
-                </Link>
-                <Link
-                  to="/#benefits"
-                  onClick={() => setMobileMenuIsOpen(false)}
-                  className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
-                >
-                  Benefits
-                </Link>
-
-                {/* Theme Toggle Mobile */}
-                <div className="flex items-center justify-between py-4 border-t border-theme-border">
-                  <span className="text-sm font-semibold text-theme-text-secondary">Theme</span>
+      {/* Nav Links for Mobile Drawer rendered via React Portal */}
+      {typeof window !== "undefined" && createPortal(
+        <AnimatePresence>
+          {mobileMenuIsOpen && (
+            <>
+              {/* Backdrop Overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={() => setMobileMenuIsOpen(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[9998] lg:hidden pointer-events-auto"
+                aria-hidden="true"
+              />
+              {/* Slide-in off-canvas drawer */}
+              <motion.div
+                ref={sidebarRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Mobile Navigation"
+                onKeyDown={handleKeyDown}
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+                className="fixed inset-y-0 left-0 w-full max-w-xs sm:max-w-sm bg-theme-bg border-r border-theme-border shadow-2xl z-[9999] lg:hidden flex flex-col h-full overflow-y-auto pointer-events-auto"
+              >
+                {/* Drawer Header */}
+                <div className="flex items-center justify-between px-6 py-5 border-b border-theme-border">
+                  <Link to="/" onClick={() => setMobileMenuIsOpen(false)} className="flex items-center gap-2">
+                    <div className="p-1.5 bg-gradient-to-tr from-theme-accent/15 to-theme-accent-alt/15 rounded-lg border border-theme-accent/20">
+                      <svg className="w-5 h-5" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#navbar-logo-gradient)" />
+                        <circle cx="32" cy="32" r="14" stroke="white" stroke-width="4" fill="none" />
+                      </svg>
+                    </div>
+                    <span className="text-lg font-poppins font-extrabold tracking-tight bg-gradient-to-r from-theme-accent to-theme-accent-alt bg-clip-text text-transparent">
+                      ITMS
+                    </span>
+                  </Link>
                   <button
-                    onClick={handleThemeToggle}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-medium bg-theme-card/55 hover:bg-theme-card min-h-[44px]"
+                    type="button"
+                    className="p-2 rounded-xl text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-card/50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    onClick={() => setMobileMenuIsOpen(false)}
+                    aria-label="Close menu"
                   >
-                    {isDarkMode ? (
-                      <>
-                        <Sun size={15} /> Light
-                      </>
-                    ) : (
-                      <>
-                        <Moon size={15} /> Dark
-                      </>
-                    )}
+                    <X size={20} />
                   </button>
                 </div>
 
-                {/* Color Palette Mobile */}
-                <div className="py-4 border-t border-theme-border space-y-3">
-                  <span className="text-sm font-semibold text-theme-text-secondary block">Color Theme</span>
-                  <div className="flex flex-wrap gap-2">
-                    {colorThemesList.map((themeItem) => {
-                      const isSelected = colorTheme === themeItem.id;
-                      const colorsToShow = isDarkMode ? themeItem.previewColors.dark : themeItem.previewColors.light;
-                      return (
-                        <button
-                          key={themeItem.id}
-                          type="button"
-                          onClick={() => handleSelectColorTheme(themeItem.id)}
-                          className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all min-h-[44px] ${
-                            isSelected
-                              ? "border-theme-accent bg-theme-accent/10 text-theme-accent"
-                              : "border-theme-border text-theme-text-secondary hover:bg-theme-card/50"
-                          }`}
-                        >
-                          <span>{themeItem.name}</span>
-                          <div className="flex gap-0.5 shrink-0">
-                            {colorsToShow.map((c, i) => (
-                              <span
-                                key={i}
-                                className="w-1.5 h-1.5 rounded-full border border-black/10 dark:border-white/10"
-                                style={{ backgroundColor: c }}
-                              />
-                            ))}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                {/* Drawer Links */}
+                <div className="px-6 py-6 space-y-6 flex-1">
+                  <Link
+                    to="/#features"
+                    onClick={() => setMobileMenuIsOpen(false)}
+                    className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
+                  >
+                    Features
+                  </Link>
+                  <Link
+                    to="/#about"
+                    onClick={() => setMobileMenuIsOpen(false)}
+                    className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
+                  >
+                    About
+                  </Link>
+                  <Link
+                    to="/#benefits"
+                    onClick={() => setMobileMenuIsOpen(false)}
+                    className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
+                  >
+                    Benefits
+                  </Link>
 
-                {authUser ? (
-                  <div className="space-y-4 pt-4 border-t border-theme-border">
-                    <Link
-                      to="/dashboard"
-                      className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
-                      onClick={() => setMobileMenuIsOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      to="/profile"
-                      className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
-                      onClick={() => setMobileMenuIsOpen(false)}
-                    >
-                      Profile
-                    </Link>
+                  {/* Theme Toggle Mobile */}
+                  <div className="flex items-center justify-between py-4 border-t border-theme-border">
+                    <span className="text-sm font-semibold text-theme-text-secondary">Theme</span>
                     <button
-                      type="button"
-                      onClick={() => {
-                        handleLogout();
-                        setMobileMenuIsOpen(false);
-                      }}
-                      className="w-full h-11 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-semibold hover:bg-theme-card/80 transition duration-200"
+                      onClick={handleThemeToggle}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-medium bg-theme-card/55 hover:bg-theme-card min-h-[44px]"
                     >
-                      Logout
+                      {isDarkMode ? (
+                        <>
+                          <Sun size={15} /> Light
+                        </>
+                      ) : (
+                        <>
+                          <Moon size={15} /> Dark
+                        </>
+                      )}
                     </button>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3 pt-4 border-t border-theme-border">
-                    <Link
-                      to="/login"
-                      className="h-11 inline-flex items-center justify-center rounded-xl border border-theme-border text-theme-text-secondary text-sm font-semibold bg-theme-card/50 hover:bg-theme-card"
-                      onClick={() => setMobileMenuIsOpen(false)}
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/signup"
-                      className="h-11 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-theme-accent to-theme-accent-alt text-white text-sm font-semibold shadow-sm hover:brightness-110"
-                      onClick={() => setMobileMenuIsOpen(false)}
-                    >
-                      Sign Up
-                    </Link>
+
+                  {/* Color Palette Mobile */}
+                  <div className="py-4 border-t border-theme-border space-y-3">
+                    <span className="text-sm font-semibold text-theme-text-secondary block">Color Theme</span>
+                    <div className="flex flex-wrap gap-2">
+                      {colorThemesList.map((themeItem) => {
+                        const isSelected = colorTheme === themeItem.id;
+                        const colorsToShow = isDarkMode ? themeItem.previewColors.dark : themeItem.previewColors.light;
+                        return (
+                          <button
+                            key={themeItem.id}
+                            type="button"
+                            onClick={() => handleSelectColorTheme(themeItem.id)}
+                            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all min-h-[44px] ${
+                              isSelected
+                                ? "border-theme-accent bg-theme-accent/10 text-theme-accent"
+                                : "border-theme-border text-theme-text-secondary hover:bg-theme-card/50"
+                            }`}
+                          >
+                            <span>{themeItem.name}</span>
+                            <div className="flex gap-0.5 shrink-0">
+                              {colorsToShow.map((c, i) => (
+                                <span
+                                  key={i}
+                                  className="w-1.5 h-1.5 rounded-full border border-black/10 dark:border-white/10"
+                                  style={{ backgroundColor: c }}
+                                />
+                              ))}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+
+                  {authUser ? (
+                    <div className="space-y-4 pt-4 border-t border-theme-border">
+                      <Link
+                        to="/dashboard"
+                        className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
+                        onClick={() => setMobileMenuIsOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <Link
+                        to="/profile"
+                        className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
+                        onClick={() => setMobileMenuIsOpen(false)}
+                      >
+                        Profile
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleLogout();
+                          setMobileMenuIsOpen(false);
+                        }}
+                        className="w-full h-11 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-semibold hover:bg-theme-card/80 transition duration-200"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 pt-4 border-t border-theme-border">
+                      <Link
+                        to="/login"
+                        className="h-11 inline-flex items-center justify-center rounded-xl border border-theme-border text-theme-text-secondary text-sm font-semibold bg-theme-card/50 hover:bg-theme-card"
+                        onClick={() => setMobileMenuIsOpen(false)}
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        to="/signup"
+                        className="h-11 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-theme-accent to-theme-accent-alt text-white text-sm font-semibold shadow-sm hover:brightness-110"
+                        onClick={() => setMobileMenuIsOpen(false)}
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </nav>
   );
 }

@@ -6,7 +6,7 @@ import {
   login, 
   forgotPassword, 
   resetPassword, 
-  resetPasswordOtp,
+  verifyResetOtp,
   checkSession, 
   logout, 
   handleGoogleCallback, 
@@ -23,8 +23,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 router.post("/signup", validateSignupBody, signup);
 router.post("/login", validateLoginBody, login);
 router.post("/forgot-password", forgotPassword);
-router.post("/reset-password-otp", resetPasswordOtp);
-router.post("/reset-password/:token", resetPassword);
+router.post("/verify-reset-otp", verifyResetOtp);
+router.post("/reset-password", resetPassword);
 router.get("/me", requireAuth, checkSession);
 router.post("/logout", logout);
 
