@@ -44,7 +44,7 @@ export async function signup(req, res, next) {
 
     const token = signToken(user);
     setAuthCookie(res, token);
-    return res.status(201).json({ user: sanitizeUser(user) });
+    return res.status(201).json({ user: sanitizeUser(user), token });
   } catch (err) {
     next(err);
   }
@@ -75,7 +75,7 @@ export async function login(req, res, next) {
 
     const token = signToken(user);
     setAuthCookie(res, token);
-    return res.json({ user: sanitizeUser(user) });
+    return res.json({ user: sanitizeUser(user), token });
   } catch (err) {
     next(err);
   }
@@ -258,10 +258,11 @@ export async function handleGoogleCallback(req, res) {
     setAuthCookie(res, newToken);
 
     if (mode === "link" || token) {
-      return res.redirect(appendVercelBypassToken(`${clientOrigin}/profile?oauth=linked`));
+      return res.redirect(appendVercelBypassToken(`${clientOrigin}/profile?oauth=linked&token=${newToken}`));
     }
 
-    return res.redirect(appendVercelBypassToken(clientOrigin));
+    const separator = clientOrigin.includes("?") ? "&" : "?";
+    return res.redirect(appendVercelBypassToken(`${clientOrigin}${separator}token=${newToken}`));
   } catch (err) {
     console.error("❌ GOOGLE AUTH CALLBACK ERROR:", err);
     const clientOrigin = getClientOrigin(req);

@@ -1,5 +1,21 @@
 const rawApiBase = import.meta.env.VITE_API_BASE_URL || "";
 
+// Extract token from URL search parameters on load and store it in localStorage
+if (typeof window !== "undefined") {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get("token");
+    if (urlToken) {
+      localStorage.setItem("itms_token", urlToken);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("token");
+      window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+    }
+  } catch (e) {
+    console.error("Failed to extract token from URL:", e);
+  }
+}
+
 export function hasApiBaseUrl() {
   return Boolean(String(rawApiBase).trim());
 }
@@ -38,11 +54,13 @@ export function buildGoogleAuthUrl(params) {
 export async function apiRequest(path, options = {}) {
   const isFormData = options.body instanceof FormData;
   const bypassToken = import.meta.env.VITE_VERCEL_BYPASS_TOKEN || import.meta.env.VITE_VERCEL_AUTOMATION_BYPASS_SECRET || "";
-  
+  const token = typeof window !== "undefined" ? localStorage.getItem("itms_token") : null;
+
   const headers = {
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers || {}),
     ...(bypassToken ? { "x-vercel-protection-bypass": bypassToken } : {}),
+    ...(token ? { "Authorization": `Bearer ${token}` } : {}),
   };
   // Include credentials for cookie-based authentication
   const config = {
@@ -79,6 +97,16 @@ export async function apiRequest(path, options = {}) {
     const message = data?.message || `Request failed (${response.status})`;
     throw new Error(message);
   }
+
+  if (typeof window !== "undefined") {
+    if (data && data.token) {
+      localStorage.setItem("itms_token", data.token);
+    }
+    if (path && String(path).includes("/auth/logout")) {
+      localStorage.removeItem("itms_token");
+    }
+  }
+
   // Return the parsed JSON data from the response
   return data;
 }
