@@ -40,6 +40,7 @@ export function streamLocalVideo(req, res, absPath) {
       "Content-Length": chunkSize,
       "Content-Type": contentType,
       "Cache-Control": "no-store",
+      "Cross-Origin-Resource-Policy": "cross-origin",
     });
     
     file.pipe(res);
@@ -51,6 +52,7 @@ export function streamLocalVideo(req, res, absPath) {
     "Content-Type": contentType,
     "Accept-Ranges": "bytes",
     "Cache-Control": "no-store",
+    "Cross-Origin-Resource-Policy": "cross-origin",
   });
   
   createReadStream(absPath).pipe(res);

@@ -107,9 +107,32 @@ export async function streamUploadMedia(req, res, next) {
       return res.status(404).json({ message: "Uploaded video not found." });
     }
     
-    // Redirect to Cloudinary URL if absolute path
+    // Proxy Cloudinary URL directly — avoids cross-origin browser block from video element
     if (upload.path && /^https?:\/\//i.test(upload.path)) {
-      return res.redirect(upload.path);
+      try {
+        const cloudRes = await fetch(upload.path, {
+          headers: req.headers.range ? { Range: req.headers.range } : {},
+        });
+        
+        res.setHeader("Content-Type", cloudRes.headers.get("content-type") || "video/mp4");
+        res.setHeader("Accept-Ranges", "bytes");
+        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+        res.setHeader("Cache-Control", "public, max-age=3600");
+        
+        const contentLength = cloudRes.headers.get("content-length");
+        const contentRange = cloudRes.headers.get("content-range");
+        if (contentLength) res.setHeader("Content-Length", contentLength);
+        if (contentRange) res.setHeader("Content-Range", contentRange);
+        
+        res.status(cloudRes.status);
+        const reader = cloudRes.body;
+        const { Readable } = await import("stream");
+        Readable.fromWeb(reader).pipe(res);
+        return;
+      } catch (proxyErr) {
+        console.warn("Cloudinary proxy failed, falling back to redirect:", proxyErr.message);
+        return res.redirect(upload.path);
+      }
     }
     
     return streamLocalVideo(req, res, upload.path);
