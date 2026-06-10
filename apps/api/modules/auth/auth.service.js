@@ -49,6 +49,22 @@ export function getClientOrigin(req) {
   return `${protocol}://${host}`;
 }
 
+export function normalizeClientOrigin(value) {
+  if (!value) return undefined;
+  try {
+    const url = new URL(String(value));
+    if (!["http:", "https:"].includes(url.protocol)) return undefined;
+    const origin = url.origin;
+    const configuredOrigin = process.env.CLIENT_ORIGIN?.replace(/\/$/, "");
+    if (configuredOrigin && origin === configuredOrigin) return origin;
+    if (url.hostname === "localhost" || url.hostname === "127.0.0.1") return origin;
+    if (/\.vercel\.app$/i.test(url.hostname)) return origin;
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
 export function normalizeRole(value) {
   const role = String(value || "").trim().toLowerCase();
   if (role === "operator") return "operator";
@@ -99,6 +115,7 @@ export function decodeOauthState(state) {
       role: typeof payload.role === "string" ? payload.role : undefined,
       organization: typeof payload.organization === "string" ? payload.organization : undefined,
       linkUserId: typeof payload.linkUserId === "string" ? payload.linkUserId : undefined,
+      clientOrigin: normalizeClientOrigin(payload.clientOrigin),
     };
   } catch {
     return null;

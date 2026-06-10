@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { CircleUser, Menu, X, Sun, Moon, Palette } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "../lib/api";
 import { colorThemesList, applyTheme } from "../design-system/themesList";
@@ -9,6 +9,7 @@ export default function Navbar({ scrolled }) {
   const [mobileMenuIsOpen, setMobileMenuIsOpen] = useState(false);
   const [authUser, setAuthUser] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [colorThemeMenuOpen, setColorThemeMenuOpen] = useState(false);
   const colorThemeMenuRef = useRef(null);
@@ -128,7 +129,7 @@ export default function Navbar({ scrolled }) {
     }
     setAuthUser(null);
     if (typeof window !== "undefined") {
-      window.location.replace("/login");
+      navigate("/login", { replace: true });
     }
   };
 

@@ -85,10 +85,18 @@ app.use(passport.session());
 
 // Google OAuth callback fallback handler (for direct port 4000/auth/google/callback)
 import { handleGoogleCallback } from "./modules/auth/auth.controller.js";
-app.get("/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login?oauth=failed", session: false }),
-  handleGoogleCallback
-);
+import { decodeOauthState, getClientOrigin } from "./modules/auth/auth.service.js";
+app.get("/auth/google/callback", (req, res, next) => {
+  passport.authenticate("google", { session: false }, (err, user) => {
+    const stateMeta = decodeOauthState(req.query?.state);
+    const clientOrigin = stateMeta?.clientOrigin || getClientOrigin(req);
+    if (err || !user) {
+      return res.redirect(`${clientOrigin}/login?oauth=failed`);
+    }
+    req.user = user;
+    return handleGoogleCallback(req, res, next);
+  })(req, res, next);
+});
 
 // Google OAuth initiate fallback handler (redirect to the actual API route)
 app.get("/auth/google", (req, res) => {

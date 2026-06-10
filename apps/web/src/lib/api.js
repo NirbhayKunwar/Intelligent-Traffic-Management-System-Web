@@ -1,4 +1,26 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+const rawApiBase = import.meta.env.VITE_API_BASE_URL || "";
+
+export function getApiBaseUrl() {
+  const cleanBase = String(rawApiBase).trim().replace(/\/+$/, "");
+  return cleanBase.replace(/\/api$/i, "");
+}
+
+export function apiUrl(path) {
+  const base = getApiBaseUrl();
+  const cleanPath = `/${String(path || "").replace(/^\/+/, "")}`;
+  return `${base}${cleanPath}`;
+}
+
+export function buildGoogleAuthUrl(params) {
+  const url = new URL(apiUrl("/api/auth/google"), window.location.origin);
+  url.searchParams.set("clientOrigin", window.location.origin);
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.set(key, value);
+    }
+  });
+  return url.toString();
+}
 
 // Utility function to make API requests with consistent error handling
 export async function apiRequest(path, options = {}) {
@@ -22,7 +44,7 @@ export async function apiRequest(path, options = {}) {
     }
   }
   // Make the API request
-  const response = await fetch(`${API_BASE}${path}`, config);
+  const response = await fetch(apiUrl(path), config);
   const data = await response.json().catch(() => ({}));
   // If the response is not OK, throw an error with the message from the response or a default message
   if (!response.ok) {

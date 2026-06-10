@@ -15,6 +15,7 @@ import {
 import { validateSignupBody, validateLoginBody } from "./auth.validation.js";
 import { requireAuth } from "../../middleware/auth.js";
 import { getToken } from "../../middleware/auth.js";
+import { decodeOauthState, getClientOrigin, normalizeClientOrigin } from "./auth.service.js";
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
@@ -29,7 +30,7 @@ router.post("/logout", logout);
 
 // Google OAuth initiate
 router.get("/google", (req, res, next) => {
-  const { mode, role, organization } = req.query;
+  const { mode, role, organization, clientOrigin } = req.query;
   let linkUserId = undefined;
 
   if (mode === "link") {
@@ -46,6 +47,7 @@ router.get("/google", (req, res, next) => {
     mode: mode === "link" ? "link" : (mode === "signup" ? "signup" : "login"),
     role: typeof role === "string" ? role : undefined,
     organization: typeof organization === "string" ? organization : undefined,
+    clientOrigin: normalizeClientOrigin(clientOrigin),
     linkUserId
   };
 
@@ -62,10 +64,17 @@ router.get("/google", (req, res, next) => {
 });
 
 // Google OAuth callback
-router.get("/google/callback", 
-  passport.authenticate("google", { failureRedirect: "/login?oauth=failed", session: false }), 
-  handleGoogleCallback
-);
+router.get("/google/callback", (req, res, next) => {
+  passport.authenticate("google", { session: false }, (err, user) => {
+    const stateMeta = decodeOauthState(req.query?.state);
+    const clientOrigin = stateMeta?.clientOrigin || getClientOrigin(req);
+    if (err || !user) {
+      return res.redirect(`${clientOrigin}/login?oauth=failed`);
+    }
+    req.user = user;
+    return handleGoogleCallback(req, res, next);
+  })(req, res, next);
+});
 
 // Google OAuth disconnect
 router.post("/google/disconnect", requireAuth, disconnectGoogle);

@@ -3,18 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, ArrowRight, Eye, EyeOff, ShieldCheck, Activity, Cpu } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiRequest } from "../lib/api";
-
-function buildGoogleAuthUrl(params) {
-  const base = import.meta.env.VITE_API_BASE_URL || "/api";
-  const url = new URL(`${base}/auth/google`, window.location.origin);
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value) {
-      url.searchParams.set(key, value);
-    }
-  });
-  return url.toString();
-}
+import { apiRequest, buildGoogleAuthUrl } from "../lib/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");

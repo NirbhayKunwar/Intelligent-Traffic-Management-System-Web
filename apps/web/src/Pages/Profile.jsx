@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, useRef } from "react";
-import { Link } from "react-router-dom";
-import { apiRequest } from "../lib/api";
+import { Link, useNavigate } from "react-router-dom";
+import { apiRequest, buildGoogleAuthUrl } from "../lib/api";
 import { User, Shield, Bell, Palette, Sliders, Laptop, Lock, Mail, Camera, Trash2, LogOut, CheckCircle2, Sparkles, Type, Save, Download, Upload } from "lucide-react";
 import { themes } from "../design-system/tokens";
 import { colorThemesList, applyTheme, generateHarmonyColors } from "../design-system/themesList";
 
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | ready | error | unauth
   const [error, setError] = useState("");
@@ -602,7 +603,7 @@ export default function Profile() {
       await apiRequest("/api/auth/logout", { method: "POST" });
       setUser(null);
       setStatus("unauth");
-      window.location.replace("/login");
+      navigate("/login", { replace: true });
     } catch (err) {
       setError(err.message || "Logout failed.");
     }
@@ -668,7 +669,7 @@ export default function Profile() {
       await apiRequest("/api/user", { method: "DELETE" });
       setUser(null);
       setStatus("unauth");
-      window.location.replace("/signup");
+      navigate("/signup", { replace: true });
     } catch (err) {
       setFormError(err.message || "Account deletion failed.");
     }
@@ -925,7 +926,7 @@ export default function Profile() {
                         Disconnect Google
                       </button>
                     ) : (
-                      <a href={`${import.meta.env.VITE_API_BASE_URL || "/api"}/auth/google?mode=link`} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-700">
+                      <a href={buildGoogleAuthUrl({ mode: "link" })} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-700">
                         Connect Google Account
                       </a>
                     )}

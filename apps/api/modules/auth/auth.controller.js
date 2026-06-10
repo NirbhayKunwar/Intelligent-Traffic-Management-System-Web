@@ -212,13 +212,13 @@ export async function logout(req, res) {
 
 export async function handleGoogleCallback(req, res) {
   try {
-    const clientOrigin = getClientOrigin(req);
+    const stateMeta = decodeOauthState(req.query?.state);
+    const clientOrigin = stateMeta?.clientOrigin || getClientOrigin(req);
     const { email, fullName, profilePic, oauthId } = getGoogleProfile(req.user);
     if (!email) {
       return res.redirect(`${clientOrigin}/login?oauth=missing_email`);
     }
 
-    const stateMeta = decodeOauthState(req.query?.state);
     let oauthMeta = stateMeta || req.session?.oauth || {};
     
     const token = getToken(req);

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
-import { apiRequest } from "../../lib/api";
+import { Link, useNavigate } from "react-router-dom";
+import { apiRequest, getApiBaseUrl } from "../../lib/api";
 
 // Subcomponents
 import KPIGrid from "./components/KPIGrid";
@@ -23,6 +23,7 @@ import { CardSkeleton, TableSkeleton, MapSkeleton, ChartSkeleton } from "../../C
 import { themes } from "../../design-system/tokens";
 
 export default function OperatorDashboard({ user: initialUser }) {
+  const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [status, setStatus] = useState(initialUser ? "ready" : "loading"); // loading | ready | error | unauth
   const [error, setError] = useState("");
@@ -77,7 +78,7 @@ export default function OperatorDashboard({ user: initialUser }) {
   }, []);
 
   const t = themes.getThemeClasses(isDarkMode);
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+  const API_BASE = getApiBaseUrl();
 
   const toMediaUrl = (value) => {
     if (!value) return "";
@@ -204,7 +205,7 @@ export default function OperatorDashboard({ user: initialUser }) {
         const data = await apiRequest("/api/auth/me");
         if (!mounted) return;
         if (data.user?.role === "user") {
-          window.location.replace("/");
+          navigate("/", { replace: true });
           return;
         }
         setUser(data.user);
@@ -223,7 +224,7 @@ export default function OperatorDashboard({ user: initialUser }) {
     return () => {
       mounted = false;
     };
-  }, [initialUser]);
+  }, [initialUser, navigate]);
 
   useEffect(() => {
     if (status !== "ready" || !user) return;

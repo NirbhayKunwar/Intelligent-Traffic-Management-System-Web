@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Mail, Lock, Key } from "lucide-react";
 import { apiRequest } from "../lib/api";
 import cityNightImage from "../assets/Citynight.jpg";
 
 export default function ForgotPassword() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -57,7 +58,7 @@ export default function ForgotPassword() {
       });
       setMessage(data.message || "Password has been reset successfully. Redirecting to login...");
       setTimeout(() => {
-        window.location.href = "/login";
+        navigate("/login", { replace: true });
       }, 2000);
     } catch (err) {
       setError(err.message || "Could not reset password.");
