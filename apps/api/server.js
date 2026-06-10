@@ -192,7 +192,7 @@ if (isProduction) {
   const frontendDist = path.join(__dirname, "..", "web", "dist");
   app.use(express.static(frontendDist));
   
-  app.get("*", (req, res, next) => {
+  app.get("(.*)", (req, res, next) => {
     // Avoid intercepting API paths
     if (req.path.startsWith("/api")) {
       return next();
