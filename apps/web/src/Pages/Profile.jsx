@@ -24,6 +24,11 @@ export default function Profile() {
   const [disconnectStatus, setDisconnectStatus] = useState("idle"); // idle | disconnecting
   const fileInputRef = useRef(null);
 
+  // OTP states for password updates
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+
   // Profile Pic States
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -649,6 +654,24 @@ export default function Profile() {
     }
   };
 
+  const sendOtpForPasswordChange = async () => {
+    setFormError("");
+    setFormSuccess("");
+    setIsSendingOtp(true);
+    try {
+      const response = await apiRequest("/api/user/password-otp", { method: "POST" });
+      setOtpSent(true);
+      setFormSuccess(response.message || "Verification OTP has been sent to your email.");
+      if (response.otp) {
+        setFormSuccess(`[DEV MODE] OTP sent to email: ${response.otp}`);
+      }
+    } catch (err) {
+      setFormError(err.message || "Failed to send verification OTP.");
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
   const handleSaveChanges = async () => {
     setFormError("");
     setFormSuccess("");
@@ -656,9 +679,15 @@ export default function Profile() {
       setFormError("Name and email are required fields.");
       return;
     }
-    if (formData.newPassword && needsOldPassword && !formData.oldPassword) {
-      setFormError("Enter old password to verify updates.");
-      return;
+    if (formData.newPassword) {
+      if (needsOldPassword && !formData.oldPassword) {
+        setFormError("Enter old password to verify updates.");
+        return;
+      }
+      if (!otpCode.trim()) {
+        setFormError("Verification OTP code is required to change password.");
+        return;
+      }
     }
 
     setSaveStatus("saving");
@@ -670,10 +699,13 @@ export default function Profile() {
       if (formData.newPassword) {
         if (formData.oldPassword) payload.oldPassword = formData.oldPassword;
         payload.newPassword = formData.newPassword;
+        payload.otp = otpCode.trim();
       }
       const data = await apiRequest("/api/user", { method: "PUT", body: payload });
       setUser(data.user);
       setFormData((prev) => ({ ...prev, oldPassword: "", newPassword: "" }));
+      setOtpCode("");
+      setOtpSent(false);
       setFormSuccess("Profile settings saved.");
       setIsSaved(true);
     } catch (err) {
@@ -907,7 +939,13 @@ export default function Profile() {
                     type="password"
                     placeholder="Enter new credentials"
                     value={formData.newPassword}
-                    onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, newPassword: e.target.value });
+                      if (!e.target.value) {
+                        setOtpSent(false);
+                        setOtpCode("");
+                      }
+                    }}
                   />
                   {formData.newPassword && (
                     <div className="mt-2 space-y-1">
@@ -922,6 +960,44 @@ export default function Profile() {
                         />
                       </div>
                     </div>
+                  )}
+
+                  {formData.newPassword && (
+                    otpSent ? (
+                      <div className="space-y-1.5 mt-3 pt-3 border-t border-slate-200/50 dark:border-white/5">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">Verification OTP Code</span>
+                        <input
+                          className={`${t.input}`}
+                          type="text"
+                          maxLength={6}
+                          placeholder="Enter 6-digit OTP code"
+                          value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                        />
+                        <div className="flex justify-between items-center text-[10px] text-slate-400 mt-1">
+                          <span>Sent to {user?.email} (Valid for 10 mins)</span>
+                          <button
+                            type="button"
+                            onClick={sendOtpForPasswordChange}
+                            disabled={isSendingOtp}
+                            className="text-theme-accent hover:underline focus:outline-none font-semibold"
+                          >
+                            {isSendingOtp ? "Sending..." : "Resend OTP"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={sendOtpForPasswordChange}
+                          disabled={isSendingOtp}
+                          className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-theme-text-primary border border-theme-border/40 disabled:opacity-50 transition duration-200"
+                        >
+                          {isSendingOtp ? "Sending OTP..." : "Send Verification OTP to Email"}
+                        </button>
+                      </div>
+                    )
                   )}
                 </div>
 

@@ -7,6 +7,7 @@ import {
   setAuthCookie 
 } from "../auth/auth.service.js";
 import { cloudinary } from "../../config/cloudinary.js";
+import { sendPasswordChangeOtpEmail } from "../../services/emailService.js";
 
 /**
  * Handles profile picture uploads to Cloudinary or image deletion.
@@ -94,6 +95,15 @@ export async function updateProfile(req, res, next) {
     }
 
     if (newPassword) {
+      const { otp } = req.body || {};
+      if (!otp) {
+        return res.status(400).json({ message: "Verification OTP code is required to update password." });
+      }
+
+      if (user.passwordResetToken !== otp || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+        return res.status(400).json({ message: "Invalid or expired OTP code." });
+      }
+
       if (user.password && user.passwordSet !== false) {
         if (!oldPassword) {
           return res.status(400).json({ message: "Current password is required to change password." });
@@ -109,6 +119,9 @@ export async function updateProfile(req, res, next) {
       if (!user.linkedProviders.includes("password")) {
         user.linkedProviders.push("password");
       }
+
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
     }
 
     await user.save();
@@ -148,6 +161,40 @@ export async function deleteAccount(req, res, next) {
     });
 
     return res.status(200).json({ message: "Account deleted successfully." });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Generates and sends an OTP to user email for password change verification.
+ */
+export async function requestPasswordOtp(req, res, next) {
+  try {
+    const user = await User.findOne({ id: req.userId });
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.passwordResetToken = otp;
+    user.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins limit
+    await user.save();
+
+    const isProduction = process.env.NODE_ENV === "production";
+    try {
+      await sendPasswordChangeOtpEmail(user.email, otp);
+    } catch (err) {
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save();
+      console.error("Password change OTP dispatch failure:", err.message);
+      return res.status(500).json({ message: "Could not send verification OTP. Please try again later." });
+    }
+
+    const response = { message: "OTP has been sent to your email." };
+    if (!isProduction && !process.env.EMAIL_USER) {
+      response.otp = otp;
+    }
+    return res.json(response);
   } catch (err) {
     next(err);
   }

@@ -14,12 +14,20 @@ function getTransporter() {
   if (!user || !pass) return null;
 
   if (!_transporter) {
-    _transporter = nodemailer.createTransport({
-      host: EMAIL_HOST,
-      port: EMAIL_PORT,
-      secure: EMAIL_PORT === 465, // True for 465, false for other ports
+    const options = {
       auth: { user, pass },
-    });
+    };
+
+    // Optimize configurations specifically for Gmail to prevent authentication/connection issues
+    if (EMAIL_HOST === "smtp.gmail.com" || EMAIL_HOST.includes("gmail")) {
+      options.service = "gmail";
+    } else {
+      options.host = EMAIL_HOST;
+      options.port = EMAIL_PORT;
+      options.secure = EMAIL_PORT === 465; // True for 465, false for other ports
+    }
+
+    _transporter = nodemailer.createTransport(options);
   }
   return _transporter;
 }
@@ -68,6 +76,34 @@ export async function sendPasswordResetOtpEmail(recipientEmail, otp) {
       <div style="font-family: sans-serif; padding: 20px; border: 1px solid #d7dee8; border-radius: 8px; max-width: 500px; margin: auto;">
         <h2 style="color: #0f172a; text-align: center;">Verify Password Reset</h2>
         <p>You requested to reset the password for your ITMS account.</p>
+        <p>Please use the following One-Time Password (OTP) to complete the verification process:</p>
+        <div style="text-align: center; margin: 25px 0;">
+          <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0891b2; background: #f0f9ff; padding: 12px 24px; border-radius: 8px; border: 1px dashed #0891b2;">
+            ${otp}
+          </span>
+        </div>
+        <p style="color: #475569; font-size: 14px;">This OTP code is valid for 10 minutes. If you did not make this request, please ignore this email.</p>
+      </div>
+    `,
+  });
+}
+
+export async function sendPasswordChangeOtpEmail(recipientEmail, otp) {
+  const user = getEmailUser();
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.log(`[SIMULATION] Password change OTP email for ${recipientEmail}: ${otp}`);
+    return;
+  }
+
+  await transporter.sendMail({
+    from: `"ITMS Security" <${user}>`,
+    to: recipientEmail,
+    subject: "Your ITMS Password Change OTP",
+    html: `
+      <div style="font-family: sans-serif; padding: 20px; border: 1px solid #d7dee8; border-radius: 8px; max-width: 500px; margin: auto;">
+        <h2 style="color: #0f172a; text-align: center;">Verify Password Update</h2>
+        <p>You requested to change the password for your ITMS account.</p>
         <p>Please use the following One-Time Password (OTP) to complete the verification process:</p>
         <div style="text-align: center; margin: 25px 0;">
           <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0891b2; background: #f0f9ff; padding: 12px 24px; border-radius: 8px; border: 1px dashed #0891b2;">

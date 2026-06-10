@@ -161,7 +161,7 @@ export default function Navbar({ scrolled }) {
 
   return (
     <nav
-      className={`fixed top-0 w-full z-[9999] transition-all duration-300 border-b font-inter ${
+      className={`fixed top-0 w-full z-[999999] transition-all duration-300 border-b font-inter ${
         scrolled
           ? "bg-theme-card/85 backdrop-blur-md border-theme-border shadow-sm"
           : "bg-transparent border-transparent"
@@ -382,7 +382,7 @@ export default function Navbar({ scrolled }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuIsOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[999998] md:hidden"
             />
             {/* Slide-in off-canvas drawer */}
             <motion.div
@@ -390,7 +390,7 @@ export default function Navbar({ scrolled }) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 w-full max-w-xs sm:max-w-sm bg-theme-bg border-l border-theme-border shadow-2xl z-50 md:hidden flex flex-col h-full overflow-y-auto"
+              className="fixed inset-y-0 right-0 w-full max-w-xs sm:max-w-sm bg-theme-bg border-l border-theme-border shadow-2xl z-[999999] md:hidden flex flex-col h-full overflow-y-auto"
             >
               {/* Drawer Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-theme-border">
