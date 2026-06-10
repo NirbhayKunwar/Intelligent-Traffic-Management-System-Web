@@ -77,7 +77,7 @@ export default function JobQueue({ isDarkMode, jobs, onClearJobs }) {
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Status Tabs */}
-        <div className="flex gap-1 p-1 bg-theme-bg/50 border border-theme-border rounded-lg text-xs font-semibold self-start sm:self-center">
+        <div className="flex flex-wrap gap-1 p-1 bg-theme-bg/50 border border-theme-border rounded-lg text-xs font-semibold self-start sm:self-center max-w-full">
           {[
             { id: "all", label: "All Logs" },
             { id: "running", label: "Active" },
@@ -151,7 +151,7 @@ export default function JobQueue({ isDarkMode, jobs, onClearJobs }) {
                         </span>
                       </div>
                       <p className="text-[10px] text-theme-text-secondary font-medium mt-0.5">
-                        Source: <span className="text-theme-text-primary">{job.sourceLabel || "Unknown Input"}</span> ({job.sourceType || "input"})
+                        Source: <span className="text-theme-text-primary break-all font-semibold">{job.sourceLabel || "Unknown Input"}</span> ({job.sourceType || "input"})
                       </p>
                     </div>
                   </div>

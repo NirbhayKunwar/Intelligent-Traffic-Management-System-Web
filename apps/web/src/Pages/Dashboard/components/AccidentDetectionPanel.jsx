@@ -35,9 +35,9 @@ export default function AccidentDetectionPanel({
         </div>
 
         {/* Controls and Run button */}
-        <div className="flex gap-2 flex-wrap items-center">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:items-center">
           <select
-            className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-black/35 px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
+            className="w-full sm:w-auto h-11 px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-black/35 text-slate-900 dark:text-white focus:outline-none"
             value={accidentSourceType}
             onChange={(e) => setAccidentSourceType(e.target.value)}
           >
@@ -46,7 +46,7 @@ export default function AccidentDetectionPanel({
           </select>
 
           <select
-            className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-black/35 px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none max-w-[160px] truncate"
+            className="w-full sm:w-auto h-11 px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-black/35 text-slate-900 dark:text-white focus:outline-none sm:max-w-[160px] truncate"
             value={accidentSourceType === "camera" ? accidentCameraId : selectedUploadId}
             onChange={(e) =>
               accidentSourceType === "camera"
@@ -86,7 +86,7 @@ export default function AccidentDetectionPanel({
               isRunningAccident ||
               (accidentSourceType === "camera" ? !accidentCameraId : !selectedUploadId)
             }
-            className={`text-xs font-semibold px-4 py-1.5 rounded-xl transition duration-200 flex items-center gap-1.5 ${
+            className={`w-full sm:w-auto h-11 text-xs font-semibold px-4 py-2 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 ${
               isRunningAccident
                 ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                 : "bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20 active:scale-95"

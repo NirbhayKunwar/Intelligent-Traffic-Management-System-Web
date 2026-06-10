@@ -125,7 +125,7 @@ export default function TrafficMap({
     <div
       id="camera-location-map"
       className={`transition-all duration-300 relative rounded-2xl overflow-hidden border ${t.border} bg-slate-100 dark:bg-slate-950/40 flex flex-col ${
-        mapExpanded ? "fixed inset-4 z-[99] shadow-2xl h-[calc(100vh-2rem)]" : "h-[500px]"
+        mapExpanded ? "fixed inset-4 z-[99] shadow-2xl h-[calc(100vh-2rem)]" : "h-[320px] sm:h-[500px]"
       }`}
     >
       {/* Map floating control bar */}
@@ -235,13 +235,13 @@ export default function TrafficMap({
           <p className="text-[10px] text-slate-400 mt-0.5">Click anywhere on the map to pin deployment node coordinates.</p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           {mapTargetType === "upload" && (
             <button
               type="button"
               onClick={deployAsCamera}
               disabled={isDeploying}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-500 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full sm:w-auto h-11 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-500 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center"
             >
               {isDeploying ? "Deploying..." : "Deploy Video stream as Camera"}
             </button>
@@ -251,7 +251,7 @@ export default function TrafficMap({
             type="button"
             onClick={saveCameraCoordinates}
             disabled={!mapDraftCoords}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-500 to-indigo-500 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md shadow-cyan-500/15"
+            className="w-full sm:w-auto h-11 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-500 to-indigo-500 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md shadow-cyan-500/15 flex items-center justify-center"
           >
             Save Pinned Coordinates
           </button>

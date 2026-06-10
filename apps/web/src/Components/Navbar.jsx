@@ -11,6 +11,17 @@ export default function Navbar({ scrolled }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (mobileMenuIsOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuIsOpen]);
+
   const [colorThemeMenuOpen, setColorThemeMenuOpen] = useState(false);
   const colorThemeMenuRef = useRef(null);
   const [colorTheme, setColorTheme] = useState(() => {
@@ -362,136 +373,171 @@ export default function Navbar({ scrolled }) {
       {/* Nav Links for Mobile Drawer */}
       <AnimatePresence>
         {mobileMenuIsOpen && (
-          <motion.div
-            className="md:hidden bg-theme-bg border-t border-theme-border shadow-lg"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-          >
-            <div className="px-4 py-6 space-y-4">
-              <Link
-                to="/#features"
-                onClick={() => setMobileMenuIsOpen(false)}
-                className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary"
-              >
-                Features
-              </Link>
-              <Link
-                to="/#about"
-                onClick={() => setMobileMenuIsOpen(false)}
-                className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary"
-              >
-                About
-              </Link>
-              <Link
-                to="/#benefits"
-                onClick={() => setMobileMenuIsOpen(false)}
-                className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary"
-              >
-                Benefits
-              </Link>
-
-              {/* Theme Toggle Mobile */}
-              <div className="flex items-center justify-between py-2 border-t border-theme-border">
-                <span className="text-sm font-semibold text-theme-text-secondary">Theme</span>
+          <>
+            {/* Backdrop Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuIsOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden"
+            />
+            {/* Slide-in off-canvas drawer */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 right-0 w-full max-w-xs sm:max-w-sm bg-theme-bg border-l border-theme-border shadow-2xl z-50 md:hidden flex flex-col h-full overflow-y-auto"
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between px-6 py-5 border-b border-theme-border">
+                <Link to="/" onClick={() => setMobileMenuIsOpen(false)} className="flex items-center gap-2">
+                  <div className="p-1.5 bg-gradient-to-tr from-theme-accent/15 to-theme-accent-alt/15 rounded-lg border border-theme-accent/20">
+                    <svg className="w-5 h-5" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#navbar-logo-gradient)" />
+                      <circle cx="32" cy="32" r="14" stroke="white" stroke-width="4" fill="none" />
+                    </svg>
+                  </div>
+                  <span className="text-lg font-poppins font-extrabold tracking-tight bg-gradient-to-r from-theme-accent to-theme-accent-alt bg-clip-text text-transparent">
+                    ITMS
+                  </span>
+                </Link>
                 <button
-                  onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-medium bg-theme-card/55 hover:bg-theme-card"
+                  type="button"
+                  className="p-2 rounded-xl text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-card/50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  onClick={() => setMobileMenuIsOpen(false)}
+                  aria-label="Close menu"
                 >
-                  {isDarkMode ? (
-                    <>
-                      <Sun size={15} /> Light
-                    </>
-                  ) : (
-                    <>
-                      <Moon size={15} /> Dark
-                    </>
-                  )}
+                  <X size={20} />
                 </button>
               </div>
 
-              {/* Color Palette Mobile */}
-              <div className="py-2 border-t border-theme-border space-y-2">
-                <span className="text-sm font-semibold text-theme-text-secondary block">Color Theme</span>
-                <div className="flex flex-wrap gap-2">
-                  {colorThemesList.map((themeItem) => {
-                    const isSelected = colorTheme === themeItem.id;
-                    const colorsToShow = isDarkMode ? themeItem.previewColors.dark : themeItem.previewColors.light;
-                    return (
-                      <button
-                        key={themeItem.id}
-                        type="button"
-                        onClick={() => handleSelectColorTheme(themeItem.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all ${
-                          isSelected
-                            ? "border-theme-accent bg-theme-accent/10 text-theme-accent"
-                            : "border-theme-border text-theme-text-secondary hover:bg-theme-card/50"
-                        }`}
-                      >
-                        <span>{themeItem.name}</span>
-                        <div className="flex gap-0.5 shrink-0">
-                          {colorsToShow.map((c, i) => (
-                            <span
-                              key={i}
-                              className="w-1.5 h-1.5 rounded-full border border-black/10 dark:border-white/10"
-                              style={{ backgroundColor: c }}
-                            />
-                          ))}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {/* Drawer Links */}
+              <div className="px-6 py-6 space-y-6 flex-1">
+                <Link
+                  to="/#features"
+                  onClick={() => setMobileMenuIsOpen(false)}
+                  className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
+                >
+                  Features
+                </Link>
+                <Link
+                  to="/#about"
+                  onClick={() => setMobileMenuIsOpen(false)}
+                  className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
+                >
+                  About
+                </Link>
+                <Link
+                  to="/#benefits"
+                  onClick={() => setMobileMenuIsOpen(false)}
+                  className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
+                >
+                  Benefits
+                </Link>
 
-              {authUser ? (
-                <div className="space-y-3 pt-2 border-t border-theme-border">
-                  <Link
-                    to="/dashboard"
-                    className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary"
-                    onClick={() => setMobileMenuIsOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    to="/profile"
-                    className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary"
-                    onClick={() => setMobileMenuIsOpen(false)}
-                  >
-                    Profile
-                  </Link>
+                {/* Theme Toggle Mobile */}
+                <div className="flex items-center justify-between py-4 border-t border-theme-border">
+                  <span className="text-sm font-semibold text-theme-text-secondary">Theme</span>
                   <button
-                    type="button"
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuIsOpen(false);
-                    }}
-                    className="w-full h-10 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-semibold hover:bg-theme-card/80 transition duration-200"
+                    onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-medium bg-theme-card/55 hover:bg-theme-card min-h-[44px]"
                   >
-                    Logout
+                    {isDarkMode ? (
+                      <>
+                        <Sun size={15} /> Light
+                      </>
+                    ) : (
+                      <>
+                        <Moon size={15} /> Dark
+                      </>
+                    )}
                   </button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-theme-border">
-                  <Link
-                    to="/login"
-                    className="h-10 inline-flex items-center justify-center rounded-xl border border-theme-border text-theme-text-secondary text-sm font-semibold bg-theme-card/50 hover:bg-theme-card"
-                    onClick={() => setMobileMenuIsOpen(false)}
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/signup"
-                    className="h-10 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-theme-accent to-theme-accent-alt text-white text-sm font-semibold shadow-sm hover:brightness-110"
-                    onClick={() => setMobileMenuIsOpen(false)}
-                  >
-                    Sign Up
-                  </Link>
+
+                {/* Color Palette Mobile */}
+                <div className="py-4 border-t border-theme-border space-y-3">
+                  <span className="text-sm font-semibold text-theme-text-secondary block">Color Theme</span>
+                  <div className="flex flex-wrap gap-2">
+                    {colorThemesList.map((themeItem) => {
+                      const isSelected = colorTheme === themeItem.id;
+                      const colorsToShow = isDarkMode ? themeItem.previewColors.dark : themeItem.previewColors.light;
+                      return (
+                        <button
+                          key={themeItem.id}
+                          type="button"
+                          onClick={() => handleSelectColorTheme(themeItem.id)}
+                          className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all min-h-[44px] ${
+                            isSelected
+                              ? "border-theme-accent bg-theme-accent/10 text-theme-accent"
+                              : "border-theme-border text-theme-text-secondary hover:bg-theme-card/50"
+                          }`}
+                        >
+                          <span>{themeItem.name}</span>
+                          <div className="flex gap-0.5 shrink-0">
+                            {colorsToShow.map((c, i) => (
+                              <span
+                                key={i}
+                                className="w-1.5 h-1.5 rounded-full border border-black/10 dark:border-white/10"
+                                style={{ backgroundColor: c }}
+                              />
+                            ))}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
-            </div>
-          </motion.div>
+
+                {authUser ? (
+                  <div className="space-y-4 pt-4 border-t border-theme-border">
+                    <Link
+                      to="/dashboard"
+                      className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
+                      onClick={() => setMobileMenuIsOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/profile"
+                      className="block text-base font-semibold text-theme-text-secondary hover:text-theme-text-primary min-h-[44px] flex items-center"
+                      onClick={() => setMobileMenuIsOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuIsOpen(false);
+                      }}
+                      className="w-full h-11 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-semibold hover:bg-theme-card/80 transition duration-200"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 pt-4 border-t border-theme-border">
+                    <Link
+                      to="/login"
+                      className="h-11 inline-flex items-center justify-center rounded-xl border border-theme-border text-theme-text-secondary text-sm font-semibold bg-theme-card/50 hover:bg-theme-card"
+                      onClick={() => setMobileMenuIsOpen(false)}
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/signup"
+                      className="h-11 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-theme-accent to-theme-accent-alt text-white text-sm font-semibold shadow-sm hover:brightness-110"
+                      onClick={() => setMobileMenuIsOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </nav>

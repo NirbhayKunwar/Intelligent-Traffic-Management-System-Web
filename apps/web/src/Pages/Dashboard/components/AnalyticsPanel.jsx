@@ -35,7 +35,7 @@ export default function AnalyticsPanel({
   return (
     <div className="grid gap-6 lg:grid-cols-12">
       {/* 1. Congestion Index Trend Panel */}
-      <div className={`p-6 ${t.card} lg:col-span-8 space-y-4`}>
+      <div className={`p-6 ${t.card} lg:col-span-8 space-y-4 min-w-0`}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400">
@@ -116,7 +116,7 @@ export default function AnalyticsPanel({
         </div>
 
         {/* Live metric footer boxes */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="p-3.5 border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-black/20 rounded-xl text-center">
             <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest block font-bold">
               Current index
@@ -145,7 +145,7 @@ export default function AnalyticsPanel({
       </div>
 
       {/* 2. Operations Summary Panel */}
-      <div className={`p-6 ${t.card} lg:col-span-4 space-y-4`}>
+      <div className={`p-6 ${t.card} lg:col-span-4 space-y-4 min-w-0`}>
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400">
             Operations Center
@@ -190,7 +190,7 @@ export default function AnalyticsPanel({
         </div>
 
         {/* Small legend summary footer */}
-        <div className="grid grid-cols-3 gap-2 border-t border-slate-200/50 dark:border-white/5 pt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-slate-200/50 dark:border-white/5 pt-4">
           {opsMetrics.map((metric) => (
             <div key={metric.key} className="text-center">
               <p className="text-[9px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold truncate">

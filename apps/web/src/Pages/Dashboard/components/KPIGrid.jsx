@@ -72,7 +72,7 @@ export default function KPIGrid({ isDarkMode, jobMetrics, cameras, congestionTre
         return (
           <div
             key={kpi.label}
-            className={`p-5 rounded-2xl border ${t.border} bg-white/70 dark:bg-slate-900/60 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md`}
+            className={`p-5 rounded-2xl border ${t.border} bg-white/70 dark:bg-slate-900/60 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md min-w-0`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-gray-400">

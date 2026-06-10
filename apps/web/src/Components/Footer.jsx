@@ -8,9 +8,9 @@ export default function Footer() {
       className="bg-theme-bg text-theme-text-secondary py-16 px-4 sm:px-6 lg:px-8 border-t border-theme-border font-inter transition-colors duration-300"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           {/* Brand col */}
-          <div className="col-span-2 space-y-4">
+          <div className="col-span-1 sm:col-span-2 md:col-span-2 space-y-4">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-gradient-to-tr from-theme-accent/15 to-theme-accent-alt/15 rounded-lg border border-theme-accent/20">
                 <svg className="w-5 h-5" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">

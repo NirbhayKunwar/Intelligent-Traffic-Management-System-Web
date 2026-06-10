@@ -544,14 +544,14 @@ export default function OperatorDashboard({ user: initialUser }) {
             <p className="text-xs uppercase tracking-[0.3em] text-cyan-600 dark:text-cyan-400 font-bold">
               Command & Control System
             </p>
-            <h1 className="text-3xl font-poppins font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+            <h1 className="text-section-title font-poppins font-bold tracking-tight text-slate-900 dark:text-white mt-1">
               Traffic Operations Dashboard
             </h1>
             <p className="text-xs text-slate-500 dark:text-gray-400 mt-1.5">
               Operations Center Console for live streaming, deployment coordination, and incident routing.
             </p>
           </div>
-          <Link to="/" className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-gray-200">
+          <Link to="/" className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-gray-200 min-h-[44px] flex items-center justify-center">
             Back to Home
           </Link>
         </header>
@@ -563,7 +563,7 @@ export default function OperatorDashboard({ user: initialUser }) {
         )}
 
         {/* Navigation Tabs Bar (Visible on all screens) */}
-        <div className="flex gap-1 p-1 bg-slate-100 dark:bg-black/35 rounded-xl border border-slate-200/50 dark:border-white/5 text-xs font-bold max-w-xl mx-auto w-full">
+        <div className="flex gap-1 p-1 bg-slate-100 dark:bg-black/35 rounded-xl border border-slate-200/50 dark:border-white/5 text-xs font-bold max-w-xl mx-auto w-full overflow-x-auto scrollbar-none flex-nowrap whitespace-nowrap">
           {[
             { id: "overview", label: "Overview" },
             { id: "map", label: "Live Map" },
@@ -574,7 +574,7 @@ export default function OperatorDashboard({ user: initialUser }) {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 rounded-lg text-center transition-all ${
+              className={`flex-1 py-3 h-11 min-w-[100px] sm:min-w-0 rounded-lg text-center transition-all flex items-center justify-center shrink-0 ${
                 activeTab === tab.id
                   ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm"
                   : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
@@ -596,7 +596,7 @@ export default function OperatorDashboard({ user: initialUser }) {
                 congestionTrend={congestionTrend}
               />
               <div className="grid gap-6 lg:grid-cols-12">
-                <div className="lg:col-span-8 space-y-6">
+                <div className="lg:col-span-8 space-y-6 min-w-0">
                   <LivePreviewPanel
                     isDarkMode={isDarkMode}
                     liveSourceType={liveSourceType}
@@ -664,7 +664,7 @@ export default function OperatorDashboard({ user: initialUser }) {
                     onClearJobs={clearAllJobs}
                   />
                 </div>
-                <div className="lg:col-span-4 flex flex-col gap-6">
+                <div className="lg:col-span-4 flex flex-col gap-6 min-w-0">
                   <AlertFeed
                     isDarkMode={isDarkMode}
                     alerts={alerts}
@@ -767,7 +767,7 @@ export default function OperatorDashboard({ user: initialUser }) {
 
           {activeTab === "map" && (
             <div className="grid gap-6 lg:grid-cols-12">
-              <div className="lg:col-span-8 space-y-6">
+              <div className="lg:col-span-8 space-y-6 min-w-0">
                 <LivePreviewPanel
                   isDarkMode={isDarkMode}
                   liveSourceType={liveSourceType}
@@ -796,7 +796,7 @@ export default function OperatorDashboard({ user: initialUser }) {
                   operatorMessage={operatorMessage}
                 />
               </div>
-              <div className="lg:col-span-4">
+              <div className="lg:col-span-4 min-w-0">
                 <AlertFeed
                   isDarkMode={isDarkMode}
                   alerts={alerts}
@@ -808,7 +808,7 @@ export default function OperatorDashboard({ user: initialUser }) {
 
           {activeTab === "analytics" && (
             <div className="grid gap-6 lg:grid-cols-12">
-              <div className="lg:col-span-8 space-y-6">
+              <div className="lg:col-span-8 space-y-6 min-w-0">
                 <AnalyticsPanel
                   isDarkMode={isDarkMode}
                   congestionTrend={congestionTrend}
@@ -822,7 +822,7 @@ export default function OperatorDashboard({ user: initialUser }) {
                   onClearJobs={clearAllJobs}
                 />
               </div>
-              <div className="lg:col-span-4 flex flex-col gap-6">
+              <div className="lg:col-span-4 flex flex-col gap-6 min-w-0">
                 <IncidentTimeline
                   isDarkMode={isDarkMode}
                   alerts={alerts}
@@ -845,7 +845,7 @@ export default function OperatorDashboard({ user: initialUser }) {
                 congestionTrend={congestionTrend}
               />
               <div className="grid gap-6 lg:grid-cols-12">
-                <div className="lg:col-span-8 space-y-6">
+                <div className="lg:col-span-8 space-y-6 min-w-0">
                   <TrafficMap
                     isDarkMode={isDarkMode}
                     cameras={cameras}
@@ -887,7 +887,7 @@ export default function OperatorDashboard({ user: initialUser }) {
                     setMapTargetType={setMapTargetType}
                   />
                 </div>
-                <div className="lg:col-span-4 flex flex-col gap-6">
+                <div className="lg:col-span-4 flex flex-col gap-6 min-w-0">
                   <UploadManager
                     isDarkMode={isDarkMode}
                     uploads={uploads}

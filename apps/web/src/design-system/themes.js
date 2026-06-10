@@ -16,9 +16,9 @@ export const themes = {
       textSecondary: `${c.textSecondary} transition-colors duration-300`,
       primaryGradient: c.primary,
       accent: c.accent,
-      input: `w-full h-10 px-3 ${radii.sm} border ${c.border} bg-[var(--theme-input-bg)] text-theme-text-primary placeholder:text-theme-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-theme-accent/30 transition duration-200`,
-      buttonPrimary: `bg-gradient-to-r ${c.primary} text-white font-semibold ${spacing.gap.sm} inline-flex items-center justify-center px-4 py-2 ${radii.md} shadow-md transition-all duration-200 hover:brightness-110 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed`,
-      buttonSecondary: `bg-[var(--theme-button-secondary-bg)] border ${c.border} text-theme-text-primary font-medium inline-flex items-center justify-center px-4 py-2 ${radii.md} shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-[var(--theme-button-secondary-hover)] active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed`,
+      input: `w-full h-11 px-3.5 ${radii.sm} border ${c.border} bg-[var(--theme-input-bg)] text-theme-text-primary placeholder:text-theme-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-theme-accent/30 transition duration-200`,
+      buttonPrimary: `bg-gradient-to-r ${c.primary} text-white font-semibold ${spacing.gap.sm} inline-flex items-center justify-center px-4 h-11 ${radii.md} shadow-md transition-all duration-200 hover:brightness-110 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed`,
+      buttonSecondary: `bg-[var(--theme-button-secondary-bg)] border ${c.border} text-theme-text-primary font-medium inline-flex items-center justify-center px-4 h-11 ${radii.md} shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-[var(--theme-button-secondary-hover)] active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed`,
     };
   }
 };
