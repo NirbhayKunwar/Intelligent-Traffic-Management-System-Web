@@ -224,7 +224,7 @@ export default function Navbar({ scrolled }) {
 
   return (
     <nav
-      className={`fixed top-0 w-full z-[999999] transition-all duration-300 border-b font-inter ${
+      className={`fixed top-0 w-full z-50 transition-all duration-300 border-b font-inter ${
         scrolled
           ? "bg-theme-card/85 backdrop-blur-md border-theme-border shadow-sm"
           : "bg-transparent border-transparent"
@@ -428,10 +428,10 @@ export default function Navbar({ scrolled }) {
               type="button"
               className="lg:hidden p-2 text-theme-text-secondary hover:text-theme-text-primary rounded-xl hover:bg-theme-card/50"
               onClick={() => setMobileMenuIsOpen((prev) => !prev)}
-              aria-label={mobileMenuIsOpen ? "Close menu" : "Open menu"}
+              aria-label="Open menu"
               aria-expanded={mobileMenuIsOpen}
             >
-              {mobileMenuIsOpen ? <X size={20} /> : <Menu size={20} />}
+              <Menu size={20} />
             </button>
           </div>
         </div>
@@ -459,11 +459,11 @@ export default function Navbar({ scrolled }) {
                 aria-modal="true"
                 aria-label="Mobile Navigation"
                 onKeyDown={handleKeyDown}
-                initial={{ x: "-100%" }}
+                initial={{ x: "100%" }}
                 animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
+                exit={{ x: "100%" }}
                 transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
-                className="fixed inset-y-0 left-0 w-full max-w-xs sm:max-w-sm bg-theme-bg border-r border-theme-border shadow-2xl z-[9999] lg:hidden flex flex-col h-full overflow-y-auto pointer-events-auto"
+                className="fixed inset-y-0 right-0 w-[85vw] max-w-[320px] sm:max-w-[360px] bg-theme-bg border-l border-theme-border shadow-2xl z-[9999] lg:hidden flex flex-col h-full overflow-y-auto pointer-events-auto"
               >
                 {/* Drawer Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-theme-border">
