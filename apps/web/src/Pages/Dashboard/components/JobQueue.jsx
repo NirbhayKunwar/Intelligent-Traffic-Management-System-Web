@@ -52,7 +52,7 @@ export default function JobQueue({ isDarkMode, jobs, onClearJobs }) {
   };
 
   return (
-    <div className={`p-6 ${t.card} space-y-4`}>
+    <div className={`p-4 sm:p-6 ${t.card} space-y-4`}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-theme-border pb-4">
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.2em] text-theme-text-secondary font-bold">

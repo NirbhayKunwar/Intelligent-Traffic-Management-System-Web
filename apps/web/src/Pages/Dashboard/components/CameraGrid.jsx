@@ -35,7 +35,7 @@ export default function CameraGrid({
   return (
     <div className="grid gap-6 lg:grid-cols-12">
       {/* 1. Camera deployment controller form */}
-      <div className={`p-6 ${t.card} lg:col-span-4 space-y-4`}>
+      <div className={`p-4 sm:p-6 ${t.card} lg:col-span-4 space-y-4`}>
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400">
             Node Deployer
@@ -98,7 +98,7 @@ export default function CameraGrid({
       </div>
 
       {/* 2. Deployed cameras visual list */}
-      <div className={`p-6 ${t.card} lg:col-span-8 space-y-4`}>
+      <div className={`p-4 sm:p-6 ${t.card} lg:col-span-8 space-y-4`}>
         <div className="flex items-center justify-between border-b border-slate-200/40 dark:border-white/5 pb-3">
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400">
@@ -126,7 +126,7 @@ export default function CameraGrid({
                       {camera.name}
                       <StatusBadge status={camera.status} />
                     </p>
-                    <p className="text-[10px] text-slate-400 font-mono truncate max-w-xs md:max-w-md">
+                    <p className="text-[10px] text-slate-400 font-mono break-all">
                       Stream: {camera.stream} | URL: {camera.url}
                     </p>
                     <p className="text-[10px] text-slate-500">

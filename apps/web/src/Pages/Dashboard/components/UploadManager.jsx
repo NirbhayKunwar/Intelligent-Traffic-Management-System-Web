@@ -24,7 +24,7 @@ export default function UploadManager({
   return (
     <div className="grid gap-6 lg:grid-cols-12">
       {/* 1. Drag & drop uploader panel */}
-      <div className={`p-6 ${t.card} lg:col-span-4 space-y-4 flex flex-col justify-between`}>
+      <div className={`p-4 sm:p-6 ${t.card} lg:col-span-4 space-y-4 flex flex-col justify-between`}>
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400">
             Storage Manager
@@ -67,7 +67,7 @@ export default function UploadManager({
       </div>
 
       {/* 2. Uploaded video lists panel */}
-      <div className={`p-6 ${t.card} lg:col-span-8 space-y-4`}>
+      <div className={`p-4 sm:p-6 ${t.card} lg:col-span-8 space-y-4`}>
         <div className="flex items-center justify-between border-b border-slate-200/40 dark:border-white/5 pb-3">
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400">
@@ -106,13 +106,15 @@ export default function UploadManager({
                       <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                         {upload.originalName}
                       </p>
-                      <p className={`text-[10px] mt-0.5 flex items-center gap-0.5 ${
+                      <p className={`text-[10px] mt-0.5 flex items-center gap-0.5 truncate ${
                         hasCoords ? "text-emerald-500 font-medium" : "text-slate-400"
                       }`}>
-                        <MapPin size={10} />
-                        {hasCoords
-                          ? `${Number(upload.latitude).toFixed(4)}°N, ${Number(upload.longitude).toFixed(4)}°E`
-                          : "No location coordinates pinned"}
+                        <MapPin size={10} className="shrink-0" />
+                        <span className="truncate">
+                          {hasCoords
+                            ? `${Number(upload.latitude).toFixed(4)}°N, ${Number(upload.longitude).toFixed(4)}°E`
+                            : "No coordinates"}
+                        </span>
                       </p>
                     </div>
                   </div>

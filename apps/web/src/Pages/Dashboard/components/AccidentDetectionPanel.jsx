@@ -23,7 +23,7 @@ export default function AccidentDetectionPanel({
   const accidentTargetId = accidentSourceType === "camera" ? accidentCameraId : selectedUploadId;
 
   return (
-    <div className={`p-6 ${t.card}`}>
+    <div className={`p-4 sm:p-6 ${t.card}`}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-slate-200/40 dark:border-white/5 pb-4 mb-4">
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400 font-bold">
