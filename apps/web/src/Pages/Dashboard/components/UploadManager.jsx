@@ -92,17 +92,17 @@ export default function UploadManager({
                 <div
                   key={upload.id}
                   onClick={() => setSelectedUploadId(upload.id)}
-                  className={`rounded-xl border p-4 cursor-pointer transition-all flex items-center justify-between gap-4 ${
+                  className={`rounded-xl border p-4 cursor-pointer transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                     isSelected
                       ? "border-cyan-400 bg-cyan-500/10 dark:bg-cyan-950/20"
                       : "border-slate-200/60 dark:border-white/5 bg-white/40 dark:bg-black/20 hover:bg-white/80 dark:hover:bg-black/30"
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-gray-400 rounded-lg">
+                  <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+                    <div className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-gray-400 rounded-lg shrink-0">
                       <Film size={18} />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                         {upload.originalName}
                       </p>
@@ -119,7 +119,7 @@ export default function UploadManager({
                     </div>
                   </div>
 
-                  <div className="flex gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex gap-1.5 w-full sm:w-auto justify-end pt-2 border-t border-slate-100 dark:border-white/5 sm:border-none sm:pt-0 sm:border-t-0" onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
                       onClick={() => {
@@ -127,15 +127,15 @@ export default function UploadManager({
                         setMapTargetType("upload");
                         document.getElementById("camera-location-map")?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold border border-cyan-500/20 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 hover:bg-cyan-500/25"
+                      className="px-3 py-1.5 rounded-lg text-[10px] font-bold border border-cyan-500/20 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 hover:bg-cyan-500/25 flex-1 sm:flex-none h-9 flex items-center justify-center"
                       title="Pin on map"
                     >
-                      Pin Coords
+                      Pin Coordinates
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteUpload(upload)}
-                      className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-500/20 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                      className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-500/20 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 h-9 w-9 flex items-center justify-center shrink-0"
                       title="Remove file"
                     >
                       <Trash2 size={13} />
