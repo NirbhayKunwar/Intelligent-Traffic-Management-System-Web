@@ -13,7 +13,7 @@ import {
   upsertGoogleUser,
   ensureAuthMetadata
 } from "./auth.service.js";
-import { sendPasswordResetEmail } from "../../services/emailService.js";
+import { sendPasswordResetEmail, sendPasswordResetOtpEmail } from "../../services/emailService.js";
 import { getToken } from "../../middleware/auth.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
@@ -87,35 +87,67 @@ export async function forgotPassword(req, res, next) {
 
     const normalizedEmail = String(email).trim().toLowerCase();
     const user = await User.findOne({ email: normalizedEmail });
-    const genericMessage = "If an account exists for this email, a password reset link has been sent.";
+    const genericMessage = "If an account exists for this email, a password reset OTP has been sent.";
 
     if (!user) {
       return res.json({ message: genericMessage });
     }
 
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    user.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    // Generate 6-digit numeric OTP code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.passwordResetToken = otp;
+    user.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
     await user.save();
 
-    const clientOrigin = getClientOrigin(req);
-    const resetLink = `${clientOrigin}/reset-password/${resetToken}`;
-
     try {
-      await sendPasswordResetEmail(user.email, resetLink);
+      await sendPasswordResetOtpEmail(user.email, otp);
     } catch (err) {
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save();
-      console.error("Password reset email dispatch failure:", err.message);
-      return res.status(500).json({ message: "Could not send password reset email. Please try again later." });
+      console.error("Password reset OTP dispatch failure:", err.message);
+      return res.status(500).json({ message: "Could not send password reset OTP. Please try again later." });
     }
 
     const response = { message: genericMessage };
     if (!isProduction && !process.env.EMAIL_USER) {
-      response.resetLink = resetLink;
+      response.otp = otp;
     }
     return res.json(response);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function resetPasswordOtp(req, res, next) {
+  try {
+    const { email, otp, password } = req.body;
+
+    if (!email) return res.status(400).json({ message: "Email is required." });
+    if (!otp) return res.status(400).json({ message: "OTP code is required." });
+    if (!password) return res.status(400).json({ message: "New password is required." });
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({
+      email: normalizedEmail,
+      passwordResetToken: otp,
+      passwordResetExpires: { $gt: new Date() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired OTP code." });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.passwordSet = true;
+    if (!user.linkedProviders.includes("password")) {
+      user.linkedProviders.push("password");
+    }
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    return res.json({ message: "Password has been reset successfully. You can now log in." });
   } catch (err) {
     next(err);
   }

@@ -27,6 +27,7 @@ import inferenceRoutes from "./modules/inference/inference.routes.js";
 import settingsRoutes from "./modules/settings/settings.routes.js";
 import uploadRoutes from "./modules/upload/upload.routes.js";
 import metricsRoutes from "./modules/metrics/metrics.routes.js";
+import userRoutes from "./modules/user/user.routes.js";
 
 // Deep Health dependencies
 import mongoose from "mongoose";
@@ -95,6 +96,13 @@ app.use(session({
 configurePassport();
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Google OAuth callback fallback handler (for direct port 4000/auth/google/callback)
+import { handleGoogleCallback } from "./modules/auth/auth.controller.js";
+app.get("/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login?oauth=failed", session: false }),
+  handleGoogleCallback
+);
 
 // Standard rate limiters
 app.use("/api/auth/login", authRateLimiter);
@@ -177,6 +185,7 @@ app.use("/api/inference", inferenceRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/metrics", metricsRoutes);
+app.use("/api/user", userRoutes);
 
 // Serves built frontend statically in production
 if (isProduction) {

@@ -1,41 +1,39 @@
 // Colors definition matching design requirements.
-// The colors system is strictly structured around the 60-30-10 golden design rule:
-// - 60% Dominant Color (Background Canvas): Slate-50 for light mode, Slate-950 for dark mode.
-// - 30% Secondary Color (Structural elements like Cards, Borders, Typography): White/Slate-900 cards, Slate borders, and Slate primary/secondary text.
-// - 10% Accent Color (Call-To-Actions, interactive highlights, active states): Vibrant Cyan and Indigo gradients.
+// The colors system is strictly structured around the 60-30-10 golden design rule.
+// Design tokens bind directly to CSS variables to support dynamic runtime theme switches.
 export const colors = {
   light: {
-    // 60% Dominant
-    background: "bg-slate-50",
+    // 60% Dominant Background
+    background: "bg-theme-bg",
 
     // 30% Secondary (Surfaces & Typography)
-    card: "bg-white",
-    border: "border-slate-200",
-    textPrimary: "text-slate-900",
-    textSecondary: "text-slate-500",
+    card: "bg-theme-card",
+    border: "border-theme-border",
+    textPrimary: "text-theme-text-primary",
+    textSecondary: "text-theme-text-secondary",
 
     // 10% Accent (Interactive & Focus)
-    primary: "from-cyan-600 to-indigo-600",
-    accent: "text-cyan-600",
+    primary: "from-theme-accent to-theme-accent-alt",
+    accent: "text-theme-accent",
   },
   dark: {
-    // 60% Dominant
-    background: "bg-slate-950",
+    // 60% Dominant Background
+    background: "bg-theme-bg",
 
     // 30% Secondary (Surfaces & Typography)
-    card: "bg-slate-900/60",
-    border: "border-white/10",
-    textPrimary: "text-slate-100",
-    textSecondary: "text-slate-400",
+    card: "bg-theme-card",
+    border: "border-theme-border",
+    textPrimary: "text-theme-text-primary",
+    textSecondary: "text-theme-text-secondary",
 
     // 10% Accent (Interactive & Focus)
-    primary: "from-cyan-400 to-indigo-400",
-    accent: "text-cyan-400",
+    primary: "from-theme-accent to-theme-accent-alt",
+    accent: "text-theme-accent",
   },
   status: {
-    online: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
-    warning: "text-amber-500 bg-amber-500/10 border-amber-500/20",
-    critical: "text-rose-500 bg-rose-500/10 border-rose-500/20",
+    online: "text-theme-success bg-theme-success/10 border-theme-success/20",
+    warning: "text-theme-warning bg-theme-warning/10 border-theme-warning/20",
+    critical: "text-theme-error bg-theme-error/10 border-theme-error/20",
     offline: "text-slate-500 bg-slate-500/10 border-slate-500/20",
   }
 };

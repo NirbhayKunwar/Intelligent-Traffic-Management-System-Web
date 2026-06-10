@@ -5,8 +5,10 @@ import About from "./Components/About";
 import Benefits from "./Components/Benefits";
 import GTS from "./Components/GTS";
 import Footer from "./Components/Footer";
+import QuickThemeWidget from "./Components/QuickThemeWidget";
 import { useEffect, useState, lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { applyTheme } from "./design-system/themesList";
 
 const Login = lazy(() => import("./Pages/Login"));
 const SignUp = lazy(() => import("./Pages/Signup"));
@@ -59,7 +61,7 @@ function AppShell({ scrolled }) {
   const hideFooter = authPagePaths.includes(location.pathname) || isResetPasswordPage;
 // The Routes component defines the different routes of the application, rendering the appropriate components based on the current path. The login and signup routes are defined to ensure that the Navbar is hidden on these pages, while still allowing the scroll listener to function properly, providing a consistent user experience across all pages of the application.
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 text-slate-900 dark:bg-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100 transition duration-300">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary transition duration-300">
       {!hideNavbar && <Navbar scrolled={scrolled} />}
 
       <Suspense fallback={
@@ -91,6 +93,7 @@ function AppShell({ scrolled }) {
         </Routes>
       </Suspense>
       {!hideFooter && <Footer />}
+      <QuickThemeWidget />
     </div>
   );
 }
@@ -107,6 +110,14 @@ function App() {
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("color-theme") || "original";
+      applyTheme(savedTheme);
+    }
+  }, []);
+
 // The Router is placed in the App component to ensure that the ScrollToHash component can access the location and scroll to the correct section on page load or when navigating to a different route with a hash. The AppShell component is responsible for rendering the main layout of the application, including the Navbar and the different pages based on the current route. By placing the Router in the App component, we ensure that the routing and scroll behavior work seamlessly across all pages of the application.
   return (
     <Router basename={import.meta.env.BASE_URL}>

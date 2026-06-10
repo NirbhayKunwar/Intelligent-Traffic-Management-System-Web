@@ -44,6 +44,34 @@ export async function sendPasswordResetEmail(recipientEmail, resetLink) {
   await transporter.sendMail(mailOptions);
 }
 
+export async function sendPasswordResetOtpEmail(recipientEmail, otp) {
+  if (!EMAIL_USER || !EMAIL_PASS) {
+    console.log(`[SIMULATION] Password reset OTP email for ${recipientEmail}: ${otp}`);
+    return;
+  }
+
+  const mailOptions = {
+    from: `"ITMS Security" <${EMAIL_USER}>`,
+    to: recipientEmail,
+    subject: "Your ITMS Password Reset OTP",
+    html: `
+      <div style="font-family: sans-serif; padding: 20px; border: 1px solid #d7dee8; border-radius: 8px; max-width: 500px; margin: auto;">
+        <h2 style="color: #0f172a; text-align: center;">Verify Password Reset</h2>
+        <p>You requested to reset the password for your ITMS account.</p>
+        <p>Please use the following One-Time Password (OTP) to complete the verification process:</p>
+        <div style="text-align: center; margin: 25px 0;">
+          <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0891b2; background: #f0f9ff; padding: 12px 24px; border-radius: 8px; border: 1px dashed #0891b2;">
+            ${otp}
+          </span>
+        </div>
+        <p style="color: #475569; font-size: 14px;">This OTP code is valid for 10 minutes. If you did not make this request, please ignore this email.</p>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
 export async function sendAccidentEmail(recipientEmail, accidentDetails) {
   if (!EMAIL_USER || !EMAIL_PASS) {
     console.log(`[SIMULATION] Email skip. Accident alert details for ${recipientEmail}:`, accidentDetails);

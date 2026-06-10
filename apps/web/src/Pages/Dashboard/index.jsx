@@ -14,6 +14,7 @@ import UploadManager from "./components/UploadManager";
 import TrafficMap from "./components/TrafficMap";
 import CongestionDetectionPanel from "./components/CongestionDetectionPanel";
 import AccidentDetectionPanel from "./components/AccidentDetectionPanel";
+import JobQueue from "./components/JobQueue";
 
 // Skeletons
 import { CardSkeleton, TableSkeleton, MapSkeleton, ChartSkeleton } from "../../Components/Skeleton";
@@ -656,6 +657,11 @@ export default function OperatorDashboard({ user: initialUser }) {
                     isDeploying={isDeploying}
                     operatorMessage={operatorMessage}
                   />
+                  <JobQueue
+                    isDarkMode={isDarkMode}
+                    jobs={jobHistory}
+                    onClearJobs={clearAllJobs}
+                  />
                 </div>
                 <div className="lg:col-span-4 flex flex-col gap-6">
                   <AlertFeed
@@ -808,6 +814,11 @@ export default function OperatorDashboard({ user: initialUser }) {
                   congestionThreshold={congestionThreshold}
                   trendHasRealData={trendHasRealData}
                   jobMetrics={jobMetrics}
+                />
+                <JobQueue
+                  isDarkMode={isDarkMode}
+                  jobs={jobHistory}
+                  onClearJobs={clearAllJobs}
                 />
               </div>
               <div className="lg:col-span-4 flex flex-col gap-6">
