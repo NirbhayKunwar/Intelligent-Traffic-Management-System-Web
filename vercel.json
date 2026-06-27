@@ -1,10 +1,30 @@
 {
-  "buildCommand": "npm install --legacy-peer-deps && npm run build --workspace=capstone",
-  "outputDirectory": "apps/web/dist",
-  "installCommand": "npm install --legacy-peer-deps",
-  "framework": null,
+  "version": 2,
+  "builds": [
+    {
+      "src": "apps/api/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "apps/web/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "src": "/api/(.*)",
+      "dest": "apps/api/server.js"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "apps/web/dist/assets/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "apps/web/dist/$1"
+    }
   ]
 }
