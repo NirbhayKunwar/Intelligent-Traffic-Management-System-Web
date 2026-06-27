@@ -20,15 +20,15 @@
     },
     {
       "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "dest": "apps/web/assets/$1"
     },
     {
       "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|ico|svg|json|html)",
-      "dest": "/$1.$2"
+      "dest": "apps/web/$1.$2"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "apps/web/index.html"
     }
   ]
 }
