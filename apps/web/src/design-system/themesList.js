@@ -27,15 +27,6 @@ export const colorThemesList = [
     }
   },
   {
-    id: "paper",
-    name: "paper",
-    desc: "Cream book-like canvas with elegant gold and amber accents.",
-    previewColors: {
-      light: ["#fafaf9", "#e4e2dd", "#d97706"],
-      dark: ["#191715", "#252320", "#d4af37"]
-    }
-  },
-  {
     id: "cyberpunk",
     name: "cyberpunk",
     desc: "Tech obsidian canvas with neon purple and cyan accents.",
@@ -54,112 +45,12 @@ export const colorThemesList = [
     }
   },
   {
-    id: "forest",
-    name: "forest",
-    desc: "Deep rich woodland background with vibrant mint highlights.",
+    id: "forest-elite",
+    name: "Forest Elite",
+    desc: "Deep organic forest pine with vibrant lime-green highlights.",
     previewColors: {
-      light: ["#f4f7f5", "#ffffff", "#10b981"],
-      dark: ["#0f2b15", "#182c20", "#4caf50"]
-    }
-  },
-  {
-    id: "ocean",
-    name: "ocean",
-    desc: "Cool maritime navy canvas and sky blue highlights.",
-    previewColors: {
-      light: ["#f0f8ff", "#e0f2fe", "#0284c7"],
-      dark: ["#0a1128", "#1c2541", "#00b4d8"]
-    }
-  },
-  {
-    id: "ume",
-    name: "ume",
-    desc: "Rich dark plum canvas with sweet pastel pink accents.",
-    previewColors: {
-      light: ["#fff5f5", "#ffe4e6", "#ec4899"],
-      dark: ["#22092c", "#2a1b4e", "#ff85a2"]
-    }
-  },
-  {
-    id: "copper",
-    name: "copper",
-    desc: "Dark bronze theme with dynamic rust copper accentuation.",
-    previewColors: {
-      light: ["#fafaf9", "#ffffff", "#d97706"],
-      dark: ["#110f0e", "#1d1b1a", "#c27c38"]
-    }
-  },
-  {
-    id: "terminal",
-    name: "terminal",
-    desc: "Developer classic monocolor neon green and dark interface.",
-    previewColors: {
-      light: ["#f4fbf4", "#e8f5e9", "#4caf50"],
-      dark: ["#000000", "#0a0a0a", "#00ff00"]
-    }
-  },
-  {
-    id: "organs",
-    name: "organs",
-    desc: "Fleshy organic tones with deep blood-crimson highlights.",
-    previewColors: {
-      light: ["#fff5f5", "#ffe3e3", "#c92a2a"],
-      dark: ["#0b090a", "#161a1d", "#ba181b"]
-    }
-  },
-  {
-    id: "lavender",
-    name: "lavender",
-    desc: "Delicate light violet and purple layout style.",
-    previewColors: {
-      light: ["#f3effa", "#eae6f7", "#8a2be2"],
-      dark: ["#161420", "#232135", "#9f7aea"]
-    }
-  },
-  {
-    id: "GPT",
-    name: "GPT",
-    desc: "Sleek chatbot-style dark grey and emerald layout.",
-    previewColors: {
-      light: ["#f7f7f8", "#ffffff", "#10a37f"],
-      dark: ["#202123", "#343541", "#7f8c8d"]
-    }
-  },
-  {
-    id: "claude",
-    name: "claude",
-    desc: "Warm publication paper canvas with rich orange details.",
-    previewColors: {
-      light: ["#fbfaf7", "#ffffff", "#d97756"],
-      dark: ["#1b1a17", "#292823", "#e06d3e"]
-    }
-  },
-  {
-    id: "cute",
-    name: "cute",
-    desc: "Sweet bright pastel pink layout for light modes.",
-    previewColors: {
-      light: ["#fff5f5", "#ffffff", "#ff85a2"],
-      dark: ["#25141e", "#38202d", "#ff69b4"]
-    }
-  },
-  /* Previous 10 premium themes */
-  {
-    id: "midnight-indigo",
-    name: "Midnight Indigo",
-    desc: "Midnight navy base, rich indigo and cobalt highlights.",
-    previewColors: {
-      light: ["#f4f6fa", "#ffffff", "#4f46e5"],
-      dark: ["#0b0f19", "#111827", "#6366f1"]
-    }
-  },
-  {
-    id: "emerald-executive",
-    name: "Emerald Executive",
-    desc: "Sophisticated corporate grey-greens with polished mint highlights.",
-    previewColors: {
-      light: ["#f3f6f4", "#ffffff", "#059669"],
-      dark: ["#060f0b", "#101c17", "#10b981"]
+      light: ["#f3f6f2", "#ffffff", "#15803d"],
+      dark: ["#071107", "#0f1c0f", "#16a34a"]
     }
   },
   {
@@ -172,66 +63,12 @@ export const colorThemesList = [
     }
   },
   {
-    id: "royal-violet",
-    name: "Royal Violet",
-    desc: "Royal purple and violet tones with glowing amethyst accents.",
-    previewColors: {
-      light: ["#f7f4fa", "#ffffff", "#7c3aed"],
-      dark: ["#0c0714", "#140a1f", "#8b5cf6"]
-    }
-  },
-  {
     id: "graphite-gold",
     name: "Graphite Gold",
     desc: "Slate graphite canvas paired with warm gold highlights.",
     previewColors: {
       light: ["#f7f7f5", "#ffffff", "#b45309"],
       dark: ["#0c0a09", "#1c1917", "#d97706"]
-    }
-  },
-  {
-    id: "arctic-frost",
-    name: "Arctic Frost",
-    desc: "Icy glacier grey surfaces with soft frosted teal accents.",
-    previewColors: {
-      light: ["#f0f5f5", "rgba(255,255,255,0.85)", "#0d9488"],
-      dark: ["#0b1317", "rgba(17,27,33,0.7)", "#14b8a6"]
-    }
-  },
-  {
-    id: "crimson-prestige",
-    name: "Crimson Prestige",
-    desc: "Burgundy tinted plaster base with deep royal crimson highlights.",
-    previewColors: {
-      light: ["#faf5f5", "#ffffff", "#dc2626"],
-      dark: ["#120606", "#1c0c0c", "#e11d48"]
-    }
-  },
-  {
-    id: "forest-elite",
-    name: "Forest Elite",
-    desc: "Deep organic forest pine with vibrant lime-green highlights.",
-    previewColors: {
-      light: ["#f3f6f2", "#ffffff", "#15803d"],
-      dark: ["#071107", "#0f1c0f", "#16a34a"]
-    }
-  },
-  {
-    id: "copper-slate",
-    name: "Copper Slate",
-    desc: "Slate grey canvas with premium warm rust-copper highlights.",
-    previewColors: {
-      light: ["#f1f3f5", "#ffffff", "#ea580c"],
-      dark: ["#0f1115", "#181c24", "#f97316"]
-    }
-  },
-  {
-    id: "cyber-teal",
-    name: "Cyber Teal",
-    desc: "Obsidian black tech canvas with glowing neon cyan/teal accents.",
-    previewColors: {
-      light: ["#f0f8fa", "#ffffff", "#0891b2"],
-      dark: ["#030c0e", "#07181d", "#06b6d4"]
     }
   }
 ];
