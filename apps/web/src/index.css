@@ -1299,3 +1299,19 @@ section[id] {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
+
+/* Thoroughly remove browser default focus outlines and shadow rings on buttons and links */
+button:focus,
+button:active,
+button:focus-visible,
+a:focus,
+a:active,
+a:focus-visible,
+[role="button"]:focus,
+[role="button"]:active,
+[role="button"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-offset-width: 0px !important;
+  --tw-ring-width: 0px !important;
+}
