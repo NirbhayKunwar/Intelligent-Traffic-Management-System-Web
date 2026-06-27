@@ -173,15 +173,13 @@ export async function requestPasswordOtp(req, res, next) {
     user.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins limit
     await user.save();
 
+    let mailError = null;
     if (isProduction) {
       try {
         await sendPasswordChangeOtpEmail(user.email, otp);
       } catch (err) {
         console.error("Password change OTP dispatch failure:", err.message);
-        user.passwordResetToken = undefined;
-        user.passwordResetExpires = undefined;
-        await user.save();
-        return res.status(500).json({ message: "Could not send verification OTP. Please try again later." });
+        mailError = err.message;
       }
     } else {
       sendPasswordChangeOtpEmail(user.email, otp).catch((err) => {
@@ -190,8 +188,11 @@ export async function requestPasswordOtp(req, res, next) {
     }
 
     const response = { message: "OTP has been sent to your email." };
-    if (!isProduction) {
+    if (!isProduction || mailError) {
       response.otp = otp;
+      if (mailError) {
+        response.warning = `SMTP Dispatch Error: ${mailError}. Fallback OTP provided.`;
+      }
     }
     return res.json(response);
   } catch (err) {

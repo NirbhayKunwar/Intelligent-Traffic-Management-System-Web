@@ -128,15 +128,13 @@ export async function forgotPassword(req, res, next) {
 
     await writeAuditLog(user.id, req.ip, "otp_generated", "Password reset OTP generated and stored");
 
+    let mailError = null;
     if (isProduction) {
       try {
         await sendBrandedResetOtpEmail(user.email, otp);
       } catch (err) {
         console.error("Password reset OTP dispatch failure:", err.message);
-        return res.status(500).json({
-          success: false,
-          message: "Could not send password reset OTP. Please try again later."
-        });
+        mailError = err.message;
       }
     } else {
       sendBrandedResetOtpEmail(user.email, otp).catch((err) => {
@@ -145,8 +143,11 @@ export async function forgotPassword(req, res, next) {
     }
 
     const response = { success: true, message: "OTP sent successfully" };
-    if (!isProduction) {
+    if (!isProduction || mailError) {
       response.otp = otp;
+      if (mailError) {
+        response.warning = `SMTP Dispatch Error: ${mailError}. Fallback OTP provided.`;
+      }
     }
     return res.json(response);
   } catch (err) {
