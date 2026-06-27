@@ -1,6 +1,12 @@
 {
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|ico|svg|json|html)",
+      "dest": "/$1.$2"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
