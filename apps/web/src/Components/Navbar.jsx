@@ -304,7 +304,7 @@ export default function Navbar({ scrolled }) {
               {/* Theme Toggle Button */}
               <button
                 onClick={handleThemeToggle}
-                className="p-2 text-theme-text-secondary hover:text-theme-text-primary rounded-xl hover:bg-theme-card/50 transition duration-200"
+                className="p-2 text-theme-text-secondary hover:text-theme-text-primary rounded-xl hover:bg-theme-card/50 transition duration-200 focus:outline-none focus:ring-0 focus-visible:outline-none"
                 aria-label="Toggle theme"
               >
                 {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
@@ -314,7 +314,7 @@ export default function Navbar({ scrolled }) {
               <div className="relative font-inter" ref={colorThemeMenuRef}>
                 <button
                   onClick={() => setColorThemeMenuOpen(!colorThemeMenuOpen)}
-                  className={`p-2 rounded-xl transition duration-200 ${
+                  className={`p-2 rounded-xl transition duration-200 focus:outline-none focus:ring-0 focus-visible:outline-none ${
                     colorThemeMenuOpen
                       ? "text-theme-accent bg-theme-accent/10"
                       : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
@@ -517,7 +517,7 @@ export default function Navbar({ scrolled }) {
                     <span className="text-sm font-semibold text-theme-text-secondary">Theme</span>
                     <button
                       onClick={handleThemeToggle}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-medium bg-theme-card/55 hover:bg-theme-card min-h-[44px]"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl border border-theme-border text-theme-text-secondary text-sm font-medium bg-theme-card/55 hover:bg-theme-card min-h-[44px] focus:outline-none focus:ring-0 focus-visible:outline-none"
                     >
                       {isDarkMode ? (
                         <>
@@ -543,7 +543,7 @@ export default function Navbar({ scrolled }) {
                             key={themeItem.id}
                             type="button"
                             onClick={() => handleSelectColorTheme(themeItem.id)}
-                            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all min-h-[44px] ${
+                            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all min-h-[44px] focus:outline-none focus:ring-0 focus-visible:outline-none ${
                               isSelected
                                 ? "border-theme-accent bg-theme-accent/10 text-theme-accent"
                                 : "border-theme-border text-theme-text-secondary hover:bg-theme-card/50"
