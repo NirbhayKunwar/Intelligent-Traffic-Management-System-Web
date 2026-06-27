@@ -23,8 +23,12 @@
       "dest": "apps/web/dist/assets/$1"
     },
     {
+      "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|ico|svg|json|html)",
+      "dest": "apps/web/dist/$1.$2"
+    },
+    {
       "src": "/(.*)",
-      "dest": "apps/web/dist/$1"
+      "dest": "apps/web/dist/index.html"
     }
   ]
 }
