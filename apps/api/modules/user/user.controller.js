@@ -9,6 +9,8 @@ import {
 import { cloudinary } from "../../config/cloudinary.js";
 import { sendPasswordChangeOtpEmail } from "../../services/emailService.js";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 /**
  * Handles profile picture uploads to Cloudinary or image deletion.
  */
