@@ -426,7 +426,7 @@ export default function Navbar({ scrolled }) {
             <button
               ref={triggerRef}
               type="button"
-              className="lg:hidden p-2 text-theme-text-secondary hover:text-theme-text-primary rounded-xl hover:bg-theme-card/50"
+              className="lg:hidden p-2 text-theme-text-secondary hover:text-theme-text-primary rounded-xl hover:bg-theme-card/50 focus:outline-none focus:ring-2 focus:ring-theme-accent/20"
               onClick={() => setMobileMenuIsOpen((prev) => !prev)}
               aria-label="Open menu"
               aria-expanded={mobileMenuIsOpen}
@@ -480,7 +480,7 @@ export default function Navbar({ scrolled }) {
                   </Link>
                   <button
                     type="button"
-                    className="p-2 rounded-xl text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-card/50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    className="p-2 rounded-xl text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-card/50 min-w-[44px] min-h-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-theme-accent/20"
                     onClick={() => setMobileMenuIsOpen(false)}
                     aria-label="Close menu"
                   >
