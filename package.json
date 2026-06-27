@@ -13,9 +13,11 @@
     "start:api": "npm start --workspace=itms-backend",
     "start:ai": "cd apps/ai && python app.py",
     "start": "node scripts/start.js",
-    "verify": "node scripts/verify.js"
+    "verify": "node scripts/verify.js",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "concurrently": "^8.2.2",
     "dotenv": "^17.3.1"
   }
