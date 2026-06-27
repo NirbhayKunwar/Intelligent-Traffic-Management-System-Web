@@ -176,11 +176,14 @@ export async function requestPasswordOtp(req, res, next) {
     try {
       await sendPasswordChangeOtpEmail(user.email, otp);
     } catch (err) {
-      console.error("Password change OTP dispatch failure:", err.message);
+      console.error("Password change OTP dispatch failure:", err.customMessage || err.message);
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save();
-      return res.status(500).json({ message: "Could not send verification OTP. Please try again later." });
+      
+      const statusCode = err.status || 500;
+      const responseMessage = err.customMessage || "Could not send verification OTP. Please try again later.";
+      return res.status(statusCode).json({ success: false, message: responseMessage });
     }
 
     return res.json({ message: "OTP has been sent to your email." });

@@ -131,10 +131,12 @@ export async function forgotPassword(req, res, next) {
     try {
       await sendBrandedResetOtpEmail(user.email, otp);
     } catch (err) {
-      console.error("Password reset OTP dispatch failure:", err.message);
-      return res.status(500).json({
+      console.error("Password reset OTP dispatch failure:", err.customMessage || err.message);
+      const statusCode = err.status || 500;
+      const responseMessage = err.customMessage || "Could not send password reset OTP. Please try again later.";
+      return res.status(statusCode).json({
         success: false,
-        message: "Could not send password reset OTP. Please try again later."
+        message: responseMessage
       });
     }
 

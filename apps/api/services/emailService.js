@@ -42,6 +42,23 @@ function getTransporter() {
   return _transporter;
 }
 
+export function enrichMailError(err) {
+  if (err.code === 'EAUTH' || (err.message && err.message.includes('535'))) {
+    err.status = 401;
+    err.customMessage = "SMTP Authentication Failed: Username and App Password not accepted. Please verify your EMAIL_USER and EMAIL_PASS environment variables.";
+  } else if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED' || (err.message && err.message.includes('timeout'))) {
+    err.status = 503;
+    err.customMessage = "SMTP Connection Timeout: Outbound SMTP ports (465/587) might be blocked by your hosting provider's firewall (e.g. Render blocks outbound SMTP by default).";
+  } else if (err.responseCode === 550 || err.code === 'EENVELOPE') {
+    err.status = 400;
+    err.customMessage = "SMTP Recipient Rejected: The recipient email address is invalid or does not exist.";
+  } else {
+    err.status = 502;
+    err.customMessage = `SMTP Relay Error: ${err.message}`;
+  }
+  return err;
+}
+
 export async function sendPasswordResetEmail(recipientEmail, resetLink) {
   const user = getEmailUser();
   const transporter = getTransporter();
@@ -106,24 +123,28 @@ export async function sendPasswordChangeOtpEmail(recipientEmail, otp) {
     return;
   }
 
-  await transporter.sendMail({
-    from: `"ITMS Security" <${user}>`,
-    to: recipientEmail,
-    subject: "Your ITMS Password Change OTP",
-    html: `
-      <div style="font-family: sans-serif; padding: 20px; border: 1px solid #d7dee8; border-radius: 8px; max-width: 500px; margin: auto;">
-        <h2 style="color: #0f172a; text-align: center;">Verify Password Update</h2>
-        <p>You requested to change the password for your ITMS account.</p>
-        <p>Please use the following One-Time Password (OTP) to complete the verification process:</p>
-        <div style="text-align: center; margin: 25px 0;">
-          <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0891b2; background: #f0f9ff; padding: 12px 24px; border-radius: 8px; border: 1px dashed #0891b2;">
-            ${otp}
-          </span>
+  try {
+    await transporter.sendMail({
+      from: `"ITMS Security" <${user}>`,
+      to: recipientEmail,
+      subject: "Your ITMS Password Change OTP",
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #d7dee8; border-radius: 8px; max-width: 500px; margin: auto;">
+          <h2 style="color: #0f172a; text-align: center;">Verify Password Update</h2>
+          <p>You requested to change the password for your ITMS account.</p>
+          <p>Please use the following One-Time Password (OTP) to complete the verification process:</p>
+          <div style="text-align: center; margin: 25px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0891b2; background: #f0f9ff; padding: 12px 24px; border-radius: 8px; border: 1px dashed #0891b2;">
+              ${otp}
+            </span>
+          </div>
+          <p style="color: #475569; font-size: 14px;">This OTP code is valid for 10 minutes. If you did not make this request, please ignore this email.</p>
         </div>
-        <p style="color: #475569; font-size: 14px;">This OTP code is valid for 10 minutes. If you did not make this request, please ignore this email.</p>
-      </div>
-    `,
-  });
+      `,
+    });
+  } catch (err) {
+    throw enrichMailError(err);
+  }
 }
 
 export async function sendAccidentEmail(recipientEmail, accidentDetails) {
@@ -182,50 +203,54 @@ export async function sendBrandedResetOtpEmail(recipientEmail, otp) {
     return;
   }
 
-  await transporter.sendMail({
-    from: `"ITMS Security" <${user}>`,
-    to: recipientEmail,
-    subject: "Password Reset Verification Code",
-    html: `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; padding: 32px; color: #f8fafc; border-radius: 16px; max-width: 550px; margin: auto; border: 1px solid #1e293b; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);">
-        <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-block; background: linear-gradient(135deg, #0ea5e9, #10b981); padding: 12px 20px; border-radius: 12px; font-weight: bold; color: #ffffff; font-size: 20px; letter-spacing: 1.5px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);">
-            ITMS COMMAND CENTER
-          </div>
-        </div>
-        
-        <div style="background-color: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155;">
-          <h2 style="color: #38bdf8; font-size: 18px; font-weight: 600; margin-top: 0; margin-bottom: 16px; text-align: center; text-transform: uppercase; letter-spacing: 0.5px;">
-            Password Reset Verification Code
-          </h2>
-          <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 24px; text-align: center;">
-            You requested to reset the password for your ITMS (Intelligent Traffic Management System) account. Please use the verification code below to authorize this request:
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <span style="font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #34d399; background-color: #0f172a; padding: 14px 28px; border-radius: 8px; border: 1px dashed #34d399; display: inline-block;">
-              ${otp}
-            </span>
+  try {
+    await transporter.sendMail({
+      from: `"ITMS Security" <${user}>`,
+      to: recipientEmail,
+      subject: "Password Reset Verification Code",
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; padding: 32px; color: #f8fafc; border-radius: 16px; max-width: 550px; margin: auto; border: 1px solid #1e293b; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <div style="display: inline-block; background: linear-gradient(135deg, #0ea5e9, #10b981); padding: 12px 20px; border-radius: 12px; font-weight: bold; color: #ffffff; font-size: 20px; letter-spacing: 1.5px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);">
+              ITMS COMMAND CENTER
+            </div>
           </div>
           
-          <div style="background-color: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 12px; border-radius: 4px; margin-top: 24px; margin-bottom: 16px;">
-            <p style="color: #fca5a5; font-size: 12px; line-height: 1.5; margin: 0; font-weight: 500;">
-              <strong>⚠️ Expiration warning:</strong> This code is valid for exactly <strong>10 minutes</strong>. Once expired or validated, it will become inactive to protect your account.
+          <div style="background-color: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155;">
+            <h2 style="color: #38bdf8; font-size: 18px; font-weight: 600; margin-top: 0; margin-bottom: 16px; text-align: center; text-transform: uppercase; letter-spacing: 0.5px;">
+              Password Reset Verification Code
+            </h2>
+            <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 24px; text-align: center;">
+              You requested to reset the password for your ITMS (Intelligent Traffic Management System) account. Please use the verification code below to authorize this request:
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <span style="font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #34d399; background-color: #0f172a; padding: 14px 28px; border-radius: 8px; border: 1px dashed #34d399; display: inline-block;">
+                ${otp}
+              </span>
+            </div>
+            
+            <div style="background-color: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 12px; border-radius: 4px; margin-top: 24px; margin-bottom: 16px;">
+              <p style="color: #fca5a5; font-size: 12px; line-height: 1.5; margin: 0; font-weight: 500;">
+                <strong>⚠️ Expiration warning:</strong> This code is valid for exactly <strong>10 minutes</strong>. Once expired or validated, it will become inactive to protect your account.
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px; border-top: 1px solid #1e293b; padding-top: 16px; text-align: center;">
+            <p style="color: #64748b; font-size: 11px; line-height: 1.6; margin: 0;">
+              <strong>Security Notice:</strong> If you did not request a password reset, please ignore this message. Your credentials remain safe and no changes have been applied.
+            </p>
+            <p style="color: #475569; font-size: 10px; margin-top: 12px; margin-bottom: 0;">
+              &copy; 2026 ITMS Inc. Systems Division. All rights reserved.
             </p>
           </div>
         </div>
-        
-        <div style="margin-top: 24px; border-top: 1px solid #1e293b; padding-top: 16px; text-align: center;">
-          <p style="color: #64748b; font-size: 11px; line-height: 1.6; margin: 0;">
-            <strong>Security Notice:</strong> If you did not request a password reset, please ignore this message. Your credentials remain safe and no changes have been applied.
-          </p>
-          <p style="color: #475569; font-size: 10px; margin-top: 12px; margin-bottom: 0;">
-            &copy; 2026 ITMS Inc. Systems Division. All rights reserved.
-          </p>
-        </div>
-      </div>
-    `,
-  });
+      `,
+    });
+  } catch (err) {
+    throw enrichMailError(err);
+  }
 }
 
 export async function verifyEmailTransporter() {
