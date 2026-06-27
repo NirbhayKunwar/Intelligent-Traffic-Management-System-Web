@@ -132,14 +132,16 @@ export async function forgotPassword(req, res, next) {
       await sendBrandedResetOtpEmail(user.email, otp);
     } catch (err) {
       console.error("Password reset OTP dispatch failure:", err.message);
-      return res.status(500).json({
-        success: false,
-        message: "Could not send password reset OTP. Please try again later."
-      });
+      if (isProduction) {
+        return res.status(500).json({
+          success: false,
+          message: "Could not send password reset OTP. Please try again later."
+        });
+      }
     }
 
     const response = { success: true, message: "OTP sent successfully" };
-    if (!isProduction && !process.env.EMAIL_USER) {
+    if (!isProduction) {
       response.otp = otp;
     }
     return res.json(response);

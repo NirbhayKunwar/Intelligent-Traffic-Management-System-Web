@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiRequest, buildGoogleAuthUrl } from "../lib/api";
-import { User, Shield, Bell, Palette, Sliders, Laptop, Lock, Mail, Camera, Trash2, LogOut, CheckCircle2, Sparkles, Type, Save, Download, Upload } from "lucide-react";
+import { User, Shield, Bell, Palette, Sliders, Lock, Mail, Camera, Trash2, LogOut, CheckCircle2, Sparkles, Type, Save, Download, Upload } from "lucide-react";
 import { themes } from "../design-system/tokens";
 import { colorThemesList, applyTheme, generateHarmonyColors } from "../design-system/themesList";
 
@@ -454,65 +454,7 @@ export default function Profile() {
     return { label: "Strong", score, color: "bg-emerald-500" };
   }, [formData.newPassword]);
 
-  const [deviceList, setDeviceList] = useState([]);
 
-  useEffect(() => {
-    const getDeviceDetails = () => {
-      if (typeof window === "undefined" || !navigator) {
-        return { type: "Web Session" };
-      }
-      const ua = navigator.userAgent;
-      let browser = "Web Browser";
-      let os = "Device";
-
-      if (ua.includes("Firefox")) browser = "Firefox";
-      else if (ua.includes("Chrome")) browser = "Chrome";
-      else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
-      else if (ua.includes("Edge")) browser = "Edge";
-      else if (ua.includes("Opera") || ua.includes("OPR")) browser = "Opera";
-
-      if (ua.includes("Windows NT 10.0")) os = "Windows 11";
-      else if (ua.includes("Windows NT 6.3")) os = "Windows 8.1";
-      else if (ua.includes("Windows NT 6.2")) os = "Windows 8";
-      else if (ua.includes("Windows NT 6.1")) os = "Windows 7";
-      else if (ua.includes("Macintosh") || ua.includes("Mac OS X")) os = "macOS";
-      else if (ua.includes("Linux")) os = "Linux";
-      else if (ua.includes("Android")) os = "Android";
-      else if (ua.includes("iPhone")) os = "iPhone";
-      else if (ua.includes("iPad")) os = "iPad";
-
-      return { type: `${browser} on ${os}` };
-    };
-
-    const { type } = getDeviceDetails();
-    
-    // Set initial loading state with local details
-    setDeviceList([
-      { id: 1, type, location: "Locating...", active: true, time: "Current Session" }
-    ]);
-
-    let active = true;
-    async function locateSession() {
-      try {
-        const res = await fetch("https://ipapi.co/json/");
-        const data = await res.json();
-        if (!active) return;
-        const loc = data.city && data.country_code ? `${data.city}, ${data.country_code}` : "Remote Location";
-        setDeviceList([
-          { id: 1, type, location: loc, active: true, time: "Current Session" }
-        ]);
-      } catch {
-        if (!active) return;
-        setDeviceList([
-          { id: 1, type, location: "Local Network", active: true, time: "Current Session" }
-        ]);
-      }
-    }
-    locateSession();
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const handleUpload = async (selectedFileParam) => {
     const uploadFile = selectedFileParam || file;
@@ -780,7 +722,6 @@ export default function Profile() {
     { id: "notifications", label: "Notification settings", icon: Bell },
     { id: "themes", label: "Theme preferences", icon: Palette },
     { id: "traffic", label: "Traffic parameters", icon: Sliders },
-    { id: "devices", label: "Connected Devices", icon: Laptop },
   ];
 
   return (
@@ -1484,31 +1425,7 @@ export default function Profile() {
               </div>
             )}
 
-            {/* 6. Connected Devices */}
-            {activeTab === "devices" && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold border-b border-slate-200/50 dark:border-white/5 pb-2">Active Session Devices</h3>
 
-                <div className="space-y-3">
-                  {deviceList.map((dev) => (
-                    <div key={dev.id} className="p-3 border border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-black/25 rounded-xl flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                          {dev.type}
-                          {dev.active && (
-                            <span className="px-1.5 py-0.2 rounded-full text-[8px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-bold">
-                              ACTIVE
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-[10px] text-slate-400">{dev.location} | Latency monitored</p>
-                      </div>
-                      <span className="text-[10px] text-slate-400 font-semibold">{dev.time}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Danger Zone Removal card (Account tab only) */}
             {activeTab === "account" && (

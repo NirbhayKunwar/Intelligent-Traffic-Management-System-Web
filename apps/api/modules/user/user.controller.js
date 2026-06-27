@@ -183,15 +183,17 @@ export async function requestPasswordOtp(req, res, next) {
     try {
       await sendPasswordChangeOtpEmail(user.email, otp);
     } catch (err) {
-      user.passwordResetToken = undefined;
-      user.passwordResetExpires = undefined;
-      await user.save();
       console.error("Password change OTP dispatch failure:", err.message);
-      return res.status(500).json({ message: "Could not send verification OTP. Please try again later." });
+      if (isProduction) {
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+        await user.save();
+        return res.status(500).json({ message: "Could not send verification OTP. Please try again later." });
+      }
     }
 
     const response = { message: "OTP has been sent to your email." };
-    if (!isProduction && !process.env.EMAIL_USER) {
+    if (!isProduction) {
       response.otp = otp;
     }
     return res.json(response);
