@@ -104,15 +104,7 @@ export async function updateProfile(req, res, next) {
         return res.status(400).json({ message: "Invalid or expired OTP code." });
       }
 
-      if (user.password && user.passwordSet !== false) {
-        if (!oldPassword) {
-          return res.status(400).json({ message: "Current password is required to change password." });
-        }
-        const valid = await bcrypt.compare(oldPassword, user.password);
-        if (!valid) {
-          return res.status(400).json({ message: "Incorrect current password." });
-        }
-      }
+
 
       user.password = await bcrypt.hash(newPassword, 10);
       user.passwordSet = true;

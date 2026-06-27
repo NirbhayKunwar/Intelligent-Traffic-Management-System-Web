@@ -435,8 +435,7 @@ export default function Profile() {
   }, [selectedColorTheme, customText, isDarkMode]);
 
   const profileImage = imageUrl || user?.profilePic || preview || "";
-  const isGoogleAuth = user?.authProvider === "google";
-  const needsOldPassword = !(isGoogleAuth && user?.passwordSet === false);
+
 
   // Password Strength Meter
   const passwordStrength = useMemo(() => {
@@ -622,10 +621,6 @@ export default function Profile() {
       return;
     }
     if (formData.newPassword) {
-      if (needsOldPassword && !formData.oldPassword) {
-        setFormError("Enter old password to verify updates.");
-        return;
-      }
       if (!otpCode.trim()) {
         setFormError("Verification OTP code is required to change password.");
         return;
@@ -639,7 +634,6 @@ export default function Profile() {
         email: formData.email.trim(),
       };
       if (formData.newPassword) {
-        if (formData.oldPassword) payload.oldPassword = formData.oldPassword;
         payload.newPassword = formData.newPassword;
         payload.otp = otpCode.trim();
       }
@@ -860,18 +854,7 @@ export default function Profile() {
               <form onSubmit={(e) => { e.preventDefault(); handleSaveChanges(); }} className="space-y-4">
                 <h3 className="text-sm font-bold border-b border-slate-200/50 dark:border-white/5 pb-2">Credentials & Providers</h3>
 
-                {needsOldPassword && (
-                  <div className="space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-slate-400">Old Password</span>
-                    <input
-                      className={`${t.input}`}
-                      type="password"
-                      placeholder="Enter old credentials"
-                      value={formData.oldPassword}
-                      onChange={(e) => setFormData({ ...formData, oldPassword: e.target.value })}
-                    />
-                  </div>
-                )}
+
 
                 <div className="space-y-1">
                   <span className="text-[10px] uppercase font-bold text-slate-400">New Password</span>
