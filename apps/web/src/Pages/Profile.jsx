@@ -602,17 +602,7 @@ export default function Profile() {
     try {
       const response = await apiRequest("/api/user/password-otp", { method: "POST" });
       setOtpSent(true);
-      if (response.warning) {
-        setFormSuccess(`[SMTP Warning] ${response.warning}`);
-        if (response.otp) {
-          setOtpCode(response.otp);
-        }
-      } else {
-        setFormSuccess(response.message || "Verification OTP has been sent to your email.");
-        if (response.otp) {
-          setFormSuccess(`[DEV MODE] OTP sent to email: ${response.otp}`);
-        }
-      }
+      setFormSuccess(response.message || "Verification OTP has been sent to your email.");
     } catch (err) {
       setFormError(err.message || "Failed to send verification OTP.");
     } finally {

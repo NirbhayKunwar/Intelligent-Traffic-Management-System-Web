@@ -20,15 +20,17 @@ function getTransporter() {
       maxConnections: 5, // Max 5 parallel connections
       maxMessages: 100, // Max 100 messages per connection
       rateLimit: 10, // Max 10 messages per second
-      connectionTimeout: 5000, // 5 seconds connection timeout
-      greetingTimeout: 5000, // 5 seconds greeting timeout
-      socketTimeout: 10000, // 10 seconds socket timeout
+      connectionTimeout: 10000, // 10 seconds connection timeout
+      greetingTimeout: 10000, // 10 seconds greeting timeout
+      socketTimeout: 15000, // 15 seconds socket timeout
       auth: { user, pass },
     };
 
     // Optimize configurations specifically for Gmail to prevent authentication/connection issues
     if (EMAIL_HOST === "smtp.gmail.com" || EMAIL_HOST.includes("gmail")) {
-      options.service = "gmail";
+      options.host = "smtp.gmail.com";
+      options.port = 465;
+      options.secure = true; // Use SSL for direct secure connection on port 465
     } else {
       options.host = EMAIL_HOST;
       options.port = EMAIL_PORT;
