@@ -256,3 +256,5 @@ process.on("uncaughtException", (err) => {
 process.on("unhandledRejection", (reason, promise) => {
   logger.error("❌ UNHANDLED REJECTION at:", { promise, reason });
 });
+
+export default app;
