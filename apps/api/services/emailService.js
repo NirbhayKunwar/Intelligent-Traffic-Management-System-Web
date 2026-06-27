@@ -20,6 +20,9 @@ function getTransporter() {
       maxConnections: 5, // Max 5 parallel connections
       maxMessages: 100, // Max 100 messages per connection
       rateLimit: 10, // Max 10 messages per second
+      connectionTimeout: 5000, // 5 seconds connection timeout
+      greetingTimeout: 5000, // 5 seconds greeting timeout
+      socketTimeout: 10000, // 10 seconds socket timeout
       auth: { user, pass },
     };
 

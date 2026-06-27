@@ -41,22 +41,23 @@ export class EmergencyDispatchService {
           etas
         };
 
-        // Send emails and log individual failures (don't let one failure block others)
-        const results = await Promise.allSettled(
+        // Send emails in the background and log individual failures (don't block the HTTP request)
+        Promise.allSettled(
           recipientList.map((email) => sendAccidentEmail(email, details))
-        );
-
-        let sent = 0, failed = 0;
-        results.forEach((r, i) => {
-          if (r.status === "fulfilled") {
-            sent++;
-          } else {
-            failed++;
-            console.error(`❌ Alert email failed for ${recipientList[i]}:`, r.reason?.message || r.reason);
-          }
+        ).then((results) => {
+          let sent = 0, failed = 0;
+          results.forEach((r, i) => {
+            if (r.status === "fulfilled") {
+              sent++;
+            } else {
+              failed++;
+              console.error(`❌ Alert email failed for ${recipientList[i]}:`, r.reason?.message || r.reason);
+            }
+          });
+          console.log(`📡 BROADCAST: ${sent} sent, ${failed} failed out of ${recipientList.length} recipients.`);
+        }).catch((err) => {
+          console.error("❌ Broadcast dispatch promise error:", err.message);
         });
-
-        console.log(`📡 BROADCAST: ${sent} sent, ${failed} failed out of ${recipientList.length} recipients.`);
       } else {
         console.log("📡 BROADCAST: Skip. Reason: No registered users found.");
       }
@@ -103,21 +104,22 @@ export class EmergencyDispatchService {
           longitude: incidentGeo.longitude
         };
 
-        const results = await Promise.allSettled(
+        Promise.allSettled(
           recipientList.map((email) => sendCongestionEmail(email, details))
-        );
-
-        let sent = 0, failed = 0;
-        results.forEach((r, i) => {
-          if (r.status === "fulfilled") {
-            sent++;
-          } else {
-            failed++;
-            console.error(`❌ Congestion alert email failed for ${recipientList[i]}:`, r.reason?.message || r.reason);
-          }
+        ).then((results) => {
+          let sent = 0, failed = 0;
+          results.forEach((r, i) => {
+            if (r.status === "fulfilled") {
+              sent++;
+            } else {
+              failed++;
+              console.error(`❌ Congestion alert email failed for ${recipientList[i]}:`, r.reason?.message || r.reason);
+            }
+          });
+          console.log(`📡 BROADCAST: ${sent} sent, ${failed} failed out of ${recipientList.length} recipients.`);
+        }).catch((err) => {
+          console.error("❌ Congestion broadcast dispatch promise error:", err.message);
         });
-
-        console.log(`📡 BROADCAST: ${sent} sent, ${failed} failed out of ${recipientList.length} recipients.`);
       } else {
         console.log("📡 BROADCAST: Skip. Reason: No registered users found.");
       }
