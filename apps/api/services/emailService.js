@@ -16,6 +16,10 @@ function getTransporter() {
 
   if (!_transporter) {
     const options = {
+      pool: true, // Enable connection pooling
+      maxConnections: 5, // Max 5 parallel connections
+      maxMessages: 100, // Max 100 messages per connection
+      rateLimit: 10, // Max 10 messages per second
       auth: { user, pass },
     };
 
