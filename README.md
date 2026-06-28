@@ -183,5 +183,6 @@ Our development process and core collision-detection mathematics are documented 
 * [real-time-accident-detection-and-traffic-analysis.ipynb](file:///c:/Users/nirbh/Desktop/Capstone/real-time-accident-detection-and-traffic-analysis.ipynb) ([Kaggle Source](https://www.kaggle.com/code/sarazahran1/real-time-accident-detection-and-traffic-analysis)) — Contains the original data training runs, coordinate checking loops, frame extraction strides, and visual validation plots.
 
 ### 📝 Project Report & History
-* [GroupNo_BTCSE-47_ProjectReport.docx](file:///c:/Users/nirbh/Desktop/Capstone/GroupNo_BTCSE-47_ProjectReport.docx) — The initial project report file. It documents how the system was initially created and includes the details of the project's original design architecture.
+* [GroupNo_BTCSE-47_ProjectReport.docx](file:///c:/Users/nirbh/Desktop/Capstone/GroupNo_BTCSE-47_ProjectReport.docx) — The academic project report for the Capstone. It details the initial design of this project—including the decoupled React 18 frontend and Node.js backend architecture—and documents how the platform was initially created using data flow diagrams (DFDs), entity-relationship (ER) databases, and literature review baselines.
+
 
