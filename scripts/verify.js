@@ -16,7 +16,7 @@ const requiredPaths = [
   "packages/shared/package.json",
   "infrastructure/Dockerfile",
   "infrastructure/ecosystem.config.js",
-  ".env.example",
+  "apps/api/data/.env.example",
   "package.json"
 ];
 

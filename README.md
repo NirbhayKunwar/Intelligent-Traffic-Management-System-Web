@@ -80,7 +80,7 @@ Grid structures are governed by responsive 12-column layouts fluidly scaling fro
 
 ## ⚙️ Environment Configuration
 
-Create a `.env` file in `apps/api/data/.env` (based on the `.env.example` template).
+Create a `.env` file in `apps/api/data/.env` (based on the `apps/api/data/.env.example` template).
 
 | Variable | Description |
 |---|---|
