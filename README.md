@@ -161,13 +161,13 @@ The runtime image is built on top of `python:3.10-slim-bookworm`, overlaying Nod
   * Integrated **Cloudinary** media storage pipelines for profile pictures and incident snapshots.
   * Co-developed Express controllers for identity linking (Email/Google Auth merges) and backend session validation.
 
-* **Rohit Kumar** (Backend Lead & Model Research Specialist)
+* **Rohit Kumar** (Backend Developer & Model Research Specialist)
   * Co-architected the Node.js/Express API server routing, Mongoose database schemas, and JWT session flows.
   * Integrated Python-to-Express API proxies with background progress tracking (updating databases every 2 seconds).
   * Researched and configured custom **YOLOv8** object tracking algorithms and vehicle collision checking loops.
   * Contributed to the React telemetry visualization charts using **Recharts**.
 
-* **Alok Raj** (Backend & Research Specialist)
+* **Alok Raj** (Backend Lead & Research Specialist)
   * Developed the high-throughput `EmergencyDispatchService` using parallel **Nodemailer** broadcasts to alert verified nearby citizen nodes.
   * Implemented secure backend session controls, password hashing (`bcryptjs`), rate-limiting, and security headers using `Helmet`.
   * Conducted AI training workflows and authored frame preprocessing helpers (`extract_frames.py`) to prepare dataset coordinates.
