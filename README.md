@@ -155,28 +155,28 @@ The runtime image is built on top of `python:3.10-slim-bookworm`, overlaying Nod
 
 ## 👥 Project Team & Contributors
 
-* **Nirbhay Singh Kunwar** (Frontend Lead & Backend Engineer)
-  * Designed and built the responsive **React 19** frontend utilizing **TailwindCSS v4** and premium glassmorphic UI cards.
-  * Implemented advanced **Leaflet** map controls including zero-jitter navigation, intent-based focusing, and interactive incident pins.
-  * Integrated **Cloudinary** media storage pipelines for profile pictures and incident snapshots.
-  * Co-developed Express controllers for identity linking (Email/Google Auth merges) and backend session validation.
+* **Nirbhay Singh Kunwar** (Frontend Lead & Backend Developer)
+  * Designed and built the React 19 frontend using TailwindCSS v4.
+  * Implemented Leaflet map controls, zero-jitter navigation, and incident pinning.
+  * Integrated Cloudinary media pipelines for profile pictures and incident uploads.
+  * Assisted in writing Express controllers for authentication and account linking.
 
-* **Rohit Kumar** (Backend Developer & Model Research Specialist)
-  * Co-architected the Node.js/Express API server routing, Mongoose database schemas, and JWT session flows.
-  * Integrated Python-to-Express API proxies with background progress tracking (updating databases every 2 seconds).
-  * Researched and configured custom **YOLOv8** object tracking algorithms and vehicle collision checking loops.
-  * Contributed to the React telemetry visualization charts using **Recharts**.
+* **Rohit Kumar** (Backend Developer & Model Research)
+  * Developed Node.js/Express API server routes, database schemas, and JWT authentication.
+  * Integrated the python-to-express API proxies and progress tracking logic.
+  * Configured YOLOv8 object tracking models and collision-detection loops.
+  * Built telemetry charting components using Recharts.
 
-* **Alok Raj** (Backend Lead & Research Specialist)
-  * Developed the high-throughput `EmergencyDispatchService` using parallel **Nodemailer** broadcasts to alert verified nearby citizen nodes.
-  * Implemented secure backend session controls, password hashing (`bcryptjs`), rate-limiting, and security headers using `Helmet`.
-  * Conducted AI training workflows and authored frame preprocessing helpers (`extract_frames.py`) to prepare dataset coordinates.
-  * Configured PM2 orchestration, logs management, and multi-stage container deployment pipelines.
+* **Alok Raj** (Backend Lead & Research)
+  * Developed the email alert dispatcher (Nodemailer) to notify nearby citizens of accidents.
+  * Implemented express session management, authentication middleware, and security configurations.
+  * Managed custom model training workflows and wrote frame extraction scripts.
+  * Set up PM2 configurations, server logs, and Docker containerization.
 
 ---
 
 ### 📊 Project Case Studies & Research
-Additionally, all team members collaboratively conducted comprehensive case studies of the ITMS system, evaluating real-world traffic flows, verifying collision-detection safety indices, and validating container resource footprints under stress conditions.
+Additionally, all team members conducted case studies on system performance and model tracking accuracy.
 
 ### 📓 Open Source Research
 Our development process and core collision-detection mathematics are documented in the open-sourced research notebook:
