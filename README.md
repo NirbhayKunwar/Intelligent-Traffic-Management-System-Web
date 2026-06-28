@@ -181,3 +181,7 @@ Additionally, all team members conducted case studies on system performance and 
 ### 📓 Open Source Research
 Our development process and core collision-detection mathematics are documented in the open-sourced research notebook:
 * [real-time-accident-detection-and-traffic-analysis.ipynb](file:///c:/Users/nirbh/Desktop/Capstone/real-time-accident-detection-and-traffic-analysis.ipynb) ([Kaggle Source](https://www.kaggle.com/code/sarazahran1/real-time-accident-detection-and-traffic-analysis)) — Contains the original data training runs, coordinate checking loops, frame extraction strides, and visual validation plots.
+
+### 📝 Project Report & History
+* [GroupNo_BTCSE-47_ProjectReport.docx](file:///c:/Users/nirbh/Desktop/Capstone/GroupNo_BTCSE-47_ProjectReport.docx) — The initial project report file. It documents how the system was initially created and includes the details of the project's original design architecture.
+
