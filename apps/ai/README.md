@@ -52,8 +52,8 @@ Service starts on `http://127.0.0.1:8001`.
 
 Defaults:
 
-- Accident model: `../../itms-II/best.pt`
-- Congestion model: `../../Traffic-Monitor-main/traffic-model.pt`
+- Accident model: `models/Accident model/best.pt`
+- Congestion model: `models/Congestion model/traffic-model.pt`
 
 Override with env vars:
 
@@ -64,7 +64,7 @@ Override with env vars:
 
 ## Backend Integration
 
-In `itms-backend/data/.env`:
+In `apps/api/data/.env`:
 
 ```env
 MODEL_SERVICE_URL=http://127.0.0.1:8001

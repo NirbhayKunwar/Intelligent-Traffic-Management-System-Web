@@ -150,3 +150,34 @@ docker run -d -p 4000:4000 --env-file apps/api/data/.env --name itms-container i
 ```
 
 The runtime image is built on top of `python:3.10-slim-bookworm`, overlaying Node.js 22, OpenCV libraries, and PM2 process management to run both Express and FastAPI processes securely with auto-restart and log-merging.
+
+---
+
+## 👥 Project Team & Contributors
+
+* **Nirbhay Singh Kunwar** (Frontend Lead & Backend Engineer)
+  * Designed and built the responsive **React 19** frontend utilizing **TailwindCSS v4** and premium glassmorphic UI cards.
+  * Implemented advanced **Leaflet** map controls including zero-jitter navigation, intent-based focusing, and interactive incident pins.
+  * Integrated **Cloudinary** media storage pipelines for profile pictures and incident snapshots.
+  * Co-developed Express controllers for identity linking (Email/Google Auth merges) and backend session validation.
+
+* **Rohit Kumar** (Backend Lead & Model Research Specialist)
+  * Co-architected the Node.js/Express API server routing, Mongoose database schemas, and JWT session flows.
+  * Integrated Python-to-Express API proxies with background progress tracking (updating databases every 2 seconds).
+  * Researched and configured custom **YOLOv8** object tracking algorithms and vehicle collision checking loops.
+  * Contributed to the React telemetry visualization charts using **Recharts**.
+
+* **Alok Raj** (Backend & Research Specialist)
+  * Developed the high-throughput `EmergencyDispatchService` using parallel **Nodemailer** broadcasts to alert verified nearby citizen nodes.
+  * Implemented secure backend session controls, password hashing (`bcryptjs`), rate-limiting, and security headers using `Helmet`.
+  * Conducted AI training workflows and authored frame preprocessing helpers (`extract_frames.py`) to prepare dataset coordinates.
+  * Configured PM2 orchestration, logs management, and multi-stage container deployment pipelines.
+
+---
+
+### 📊 Project Case Studies & Research
+Additionally, all team members collaboratively conducted comprehensive case studies of the ITMS system, evaluating real-world traffic flows, verifying collision-detection safety indices, and validating container resource footprints under stress conditions.
+
+### 📓 Open Source Research
+Our development process and core collision-detection mathematics are documented in the open-sourced research notebook:
+* [real-time-accident-detection-and-traffic-analysis.ipynb](file:///c:/Users/nirbh/Desktop/Capstone/real-time-accident-detection-and-traffic-analysis.ipynb) ([Kaggle Source](https://www.kaggle.com/code/sarazahran1/real-time-accident-detection-and-traffic-analysis)) — Contains the original data training runs, coordinate checking loops, frame extraction strides, and visual validation plots.

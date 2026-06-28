@@ -1,6 +1,6 @@
 # 🎨 ITMS Frontend Client
 
-The user interface for the **Intelligent Traffic Management System**, built with **React** and **Vite** to provide a high-frequency, glassmorphic dashboard experience.
+The user interface for the **Intelligent Traffic Management System**, built with **React 19** and **Vite** to provide a high-frequency, glassmorphic dashboard experience styled with **TailwindCSS v4**.
 
 ---
 
@@ -16,12 +16,12 @@ The frontend is designed for both city operators and citizens, offering:
 ## 🛠️ Tech Stack
 | Component | Technology |
 |---|---|
-| Library | React 18 |
+| Library | React 19 |
 | Build Tool | Vite |
 | Visualization | Recharts (Area/Bar) |
 | Maps | Leaflet + React Leaflet |
 | Media | Cloudinary (Bundled Samples) |
-| Theme | Vanilla CSS (Glassmorphism / Dark Mode) |
+| Theme | TailwindCSS v4 (Glassmorphic / Dark Mode) |
 
 ---
 

@@ -27,7 +27,7 @@ Built with **Node.js** and **Express**, this service handles:
 ---
 
 ## ⚙️ Project Configuration
-The backend requires a `.env` file located in `itms-backend/data/`. See `.env.example` for the full template.
+The backend requires a `.env` file located in `apps/api/data/`. See `.env.example` for the full template.
 
 ### Core Variables:
 - `MONGODB_URI`: Your MongoDB Atlas connection string.
