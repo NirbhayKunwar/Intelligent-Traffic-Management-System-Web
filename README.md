@@ -30,8 +30,8 @@ The application operates as a multi-tier microservice cluster packaged in a sing
                              │                             │
                              ▼                             ▼
              ┌──────────────────────────────┐     ┌──────────────────┐
-             │    FastAPI Model Service     │     │  MongoDB Atlas   │
-             │     (Python / Port 8001)     │     │ (Mongoose Schema)│
+             │    FastAPI Model Service     │            │  MongoDB Atlas   │
+             │     (Python / Port 8001)     │            │ (Mongoose Schema)│
              ├──────────────────────────────┤     └──────────────────┘
              │ • YOLOv8 Vehicle Tracker     │
              │ • Visual Accident Classifier │
