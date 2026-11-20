@@ -155,7 +155,7 @@ The runtime image is built on top of `python:3.10-slim-bookworm`, overlaying Nod
 
 ## 👥 Project Team & Contributors
 
-* **Nirbhay Singh Kunwar** (Frontend Lead & Backend Developer)
+* **Nirbhay Singh Kunwar** (Frontend Lead)
   * Designed and built the React 19 frontend using TailwindCSS v4.
   * Implemented Leaflet map controls, zero-jitter navigation, and incident pinning.
   * Integrated Cloudinary media pipelines for profile pictures and incident uploads.
